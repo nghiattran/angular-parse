@@ -13,7 +13,7 @@ angular
 		// Parse keys
 		// Parse.initialize("aNcLKlFlOSSlgFHdyelHlMLzgVxUB5MutK2Dsn4K", "zwCxqHYtqjjoubvqpoVhqkN5kczWcPUKwVI3vmMk");
 		// var Pointer = {createdBy: '_User', owner: 'Profile'};
-		var Pointer = {};
+		var Pointer = {createdBy: '_User', owner: 'Profile', onShelf: 'Shelves'};
 
 		this.setKeys = function(applicationId, javascriptKey){
 			Parse.initialize(applicationId, javascriptKey);
@@ -134,12 +134,11 @@ angular
 
 		this.post = function(table_name, data){
 			var table = new (Parse.Object.extend(table_name))();
-			// var table = new table();
 			var deferred = $q.defer();
 			table.save(data, {
-				success: function(returnData) {
-					console.log(returnData)
-					deferred.resolve({'results': returnData.attributes});
+				success: function(data) {
+					var results = new database();
+					deferred.resolve({'results': results.decodePointer(results.trimpObject(data))});
 				},
 				error: function(returnData, error) {
 					deferred.resolve({'results':{'error': error.message, 'code': error.code}});
@@ -157,12 +156,9 @@ angular
 				query.equalTo(keys[i], data[keys[i]]);
 			}
 			query.find({
-				success: function(results) {
-					var objects = [];
-					var object = new database();
-					objects = object.trimpArray(results);
-					objects = object.decodeJSON(objects);
-					deferred.resolve({'results': objects});
+				success: function(data) {
+					var results = new database();
+					deferred.resolve({'results': results.decodePointer(results.trimpArray(data))});
 				},
 				error: function(error) {
 					deferred.resolve({'results':{'error': error.message, 'code': error.code}});
@@ -171,6 +167,8 @@ angular
 			return deferred.promise;
 		};
 
+
+		// Encode parse pointer from objectId to {__type: "Pointer", className: table, objectId: objectId}
 		this.encodeQuery = function(query){
 			var keys = Object.keys(query);
 			for (var i = 0; i < keys.length; i++) 
@@ -186,7 +184,17 @@ angular
 			return query
 		};
 
-		this.decodeJSON = function(query){
+		this.encodePointer = function(table, objectId){
+			var pointer = {
+        __type: "Pointer",
+        className: table,
+        objectId: objectId
+	    };
+	    return pointer;
+		};
+
+		// Decode parse pointer from object type to a string of objectId only
+		this.decodePointer = function(query){
 			var keys = {};
 			if (typeof(query) === 'object' && query != null) {
 				keys = Object.keys(query);
@@ -196,20 +204,10 @@ angular
 				if (Pointer[keys[i]]) {
 					query[keys[i]] = query[keys[i]].objectId
 				};
-
 				if (typeof(query[keys[i]]) === 'object') {
-					this.decodeJSON(query[keys[i]]);
+					this.decodePointer(query[keys[i]]);
 				};
 			}
 			return query
-		};
-
-		this.encodePointer = function(table, objectId){
-			var pointer = {
-        __type: "Pointer",
-        className: table,
-        objectId: objectId
-	    };
-	    return pointer;
 		};
 	}
