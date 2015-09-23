@@ -10,19 +10,19 @@ angular
 	
 	function database($rootScope, $q) 
 	{
-		// Parse keys
-		// Parse.initialize("aNcLKlFlOSSlgFHdyelHlMLzgVxUB5MutK2Dsn4K", "zwCxqHYtqjjoubvqpoVhqkN5kczWcPUKwVI3vmMk");
-		// var Pointer = {createdBy: '_User', owner: 'Profile'};
+		
 		var parseParams = {include: "_include", limit: "_limit", skip: "_skip", where: "_where", keys: "_select", order: "_order"}
-		var Pointer = {createdBy: '_User', owner: 'Profile', onShelf: 'Shelves'};
+		// var Pointer = {createdBy: '_User', owner: 'Profile', onShelf: 'Shelves'};
+		var pointerMapping;
 
+		// set Parse keys
 		this.setKeys = function(applicationId, javascriptKey){
 			Parse.initialize(applicationId, javascriptKey);
 		}
 
-		this.setPointer = function(setting){
-			Pointer = setting;
-			console.log(setting);
+		// Set mapping Pointer
+		this.setPointerMapping = function(setting){
+			pointerMapping = setting;
 		}
 
 		// Encode parse pointer from objectId to {__type: "Pointer", className: table, objectId: objectId}
@@ -30,10 +30,10 @@ angular
 			var keys = Object.keys(query);
 			for (var i = 0; i < keys.length; i++) 
 			{
-				if (Pointer[keys[i]]) {
+				if (pointerMapping[keys[i]]) {
 					query[keys[i]] = {
 					  __type: "Pointer",
-		        className: Pointer[keys[i]],
+		        className: pointerMapping[keys[i]],
 		        objectId: query[keys[i]]
 			    };
 				};
@@ -46,18 +46,18 @@ angular
 		};
 
 		// Decode parse pointer from object type to a string of objectId only
-		this.decodePointer = function(query){
+		this.decodeData = function(query){
 			var keys = {};
 			if (typeof(query) === 'object' && query != null) {
 				keys = Object.keys(query);
 			}
 			for (var i = 0; i < keys.length; i++) 
 			{
-				if (Pointer[keys[i]]) {
+				if (pointerMapping[keys[i]]) {
 					query[keys[i]] = query[keys[i]].objectId
 				};
 				if (typeof(query[keys[i]]) === 'object') {
-					this.decodePointer(query[keys[i]]);
+					this.decodeData(query[keys[i]]);
 				};
 			}
 			return query
@@ -168,17 +168,17 @@ angular
 			return deferred.promise;
 		};
 
-
-
 		// REST
 
 		this.post = function(table_name, data){
 			var table = new (Parse.Object.extend(table_name))();
 			var deferred = $q.defer();
+			this.encodeQuery(data);
 			table.save(data, {
 				success: function(data) {
 					var results = new database();
-					deferred.resolve({'results': results.decodePointer(results.stripObject(data))});
+					results.setPointerMapping(pointerMapping);
+					deferred.resolve({'results': results.decodeData(results.stripObject(data))});
 				},
 				error: function(error) {
 					deferred.resolve({'results':{'error': error.message, 'code': error.code}});
@@ -198,11 +198,12 @@ angular
 					query[parseParams[keys[i]]] = params[keys[i]];
 				};
 			};
-			
+
 			query.find({
 				success: function(data) {
 					var results = new database();
-					deferred.resolve({'results': results.decodePointer(results.stripArray(data))});
+					results.setPointerMapping(pointerMapping);
+					deferred.resolve({'results': results.decodeData(results.stripArray(data))});
 				},
 				error: function(error) {
 					deferred.resolve({'results':{'error': error.message, 'code': error.code}});
