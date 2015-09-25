@@ -12,7 +12,6 @@ angular
 	{
 		
 		var parseParams = {include: "_include", limit: "_limit", skip: "_skip", where: "_where", keys: "_select", order: "_order"}
-		// var Pointer = {createdBy: '_User', owner: 'Profile', onShelf: 'Shelves'};
 		var pointerMapping;
 
 		// set Parse keys
@@ -146,25 +145,25 @@ angular
 			};
 			var deferred = $q.defer();
 			this.login(loginreturnData).then(function(returnData){
-	            if (!returnData.results.error) {
+	      if (!returnData.results.error) {
 					currentUser.set("password", data.newpassword);
 					currentUser.set("email", data.email);
-					if(currentUser)
-					{
-						currentUser.save(null, {
-							success: function(currentUser) {
-								LocalStorage.setUser();
-								deferred.resolve({'results': currentUser});
-							},
-							error: function(currentUser, error) {
-								deferred.resolve({'results':{'error': error.message, 'code': error.code}});
-							}
-						});
-					}
-	            } else{
-	                deferred.resolve({'results':{'error': returnData.results.error, 'code': returnData.results.code}});
-	            }
-	        });
+				if(currentUser)
+				{
+					currentUser.save(null, {
+						success: function(currentUser) {
+							LocalStorage.setUser();
+							deferred.resolve({'results': currentUser});
+						},
+						error: function(currentUser, error) {
+							deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+						}
+					});
+				}
+        } else{
+            deferred.resolve({'results':{'error': returnData.results.error, 'code': returnData.results.code}});
+        }
+      });
 			return deferred.promise;
 		};
 
@@ -211,4 +210,36 @@ angular
 			});
 			return deferred.promise;
 		};
+
+		this.put = function(table_name, objectId, data)
+		{
+			var deferred = $q.defer();
+			var query = new Parse.Query(Parse.Object.extend(table_name));
+			query.equalTo("objectId", objectId);
+			console.log(objectId)
+			query.first({
+			  success: function(object) {
+			  	var keys = Object.keys(data);
+			  	console.log(keys);
+			  	for (var i = 0; i < keys.length; i++) {
+			  		console.log(object.attributes[keys[i]])
+			  		object.set(keys[i], data[keys[i]]);
+			  	};
+			    var result = object.save();
+			    var keys = Object.keys(result);
+			    console.log(result)
+			    console.log(result._rejected)
+			    if (result._resolved) {
+			    	deferred.resolve({'results': {'code': 200}});
+			    } else
+			    {
+			    	deferred.resolve({'results': {'error': 'failed to update'}});
+			    }
+			  },
+			  error: function(error) {
+			    deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+			  }
+			});
+			return deferred.promise;
+		}
 	}
