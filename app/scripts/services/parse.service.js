@@ -68,7 +68,7 @@ angular
 				keys[x] = Object.keys(data[x].attributes);
 				object.objectId = data[x].id;
 				for (var y = 0; y < keys[x].length; y++) {
-					if (data[x].attributes[keys[x][y]].attributes) {
+					if (data[x].attributes[keys[x][y]] && data[x].attributes[keys[x][y]].attributes) {
 						object[keys[x][y]] = Database.prototype.stripObject(data[x].attributes[keys[x][y]]);
 					} else {
 						object[keys[x][y]] = data[x].attributes[keys[x][y]];
@@ -85,7 +85,7 @@ angular
 			object.objectId = data.id;
 			for (var i = 0; i < keys.length; i++) {
 				object[keys[i]] = data.attributes[keys[i]];
-				if (data.attributes[keys[i]].attributes) {
+				if (data.attributes[keys[i]] && data.attributes[keys[i]].attributes) {
 					object[keys[i]] = Database.prototype.stripObject(data.attributes[keys[i]]);
 				} else {
 					object[keys[i]] = data.attributes[keys[i]];
@@ -95,24 +95,25 @@ angular
 		};
 
 		// Users
-		// Database.prototype.signup = function(data){
-		// 	var user = new Parse.User();
-		// 	user.set("username", data.username);
-		// 	user.set("password", data.password);
-		// 	user.set("email", data.email);
+		Database.prototype.signup = function(data){
+			var user = new Parse.User();
+			user.set("username", data.username);
+			user.set("password", data.password);
+			user.set("email", data.email);
 
-		// 	var deferred = $q.defer();
-		// 	user.signUp(null, {
-		// 	  success: function(user) {
-		// 	    LocalStorage.setUser();
-		// 	    deferred.resolve({'results': user});
-		// 	  },
-		// 	  error: function(user, error) {
-		// 	    deferred.resolve({'results':{'error': error.message, 'code': error.code}});
-		// 	  }
-		// 	});
-		// 	return deferred.promise;
-		// };
+			var deferred = $q.defer();
+			user.signUp(null, {
+			  success: function(data) {
+			    var results = new Database();
+					results.setPointerMapping(pointerMapping);
+					deferred.resolve({'results': results.decodeData(results.stripObject(data))});
+			  },
+			  error: function(data, error) {
+			    deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+			  }
+			});
+			return deferred.promise;
+		};
 
 		// Database.prototype.login = function(data){
 		// 	var deferred = $q.defer();
