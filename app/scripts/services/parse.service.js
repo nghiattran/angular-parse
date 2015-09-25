@@ -109,60 +109,62 @@ angular
 					deferred.resolve({'results': results.decodeData(results.stripObject(data))});
 			  },
 			  error: function(data, error) {
+			  	handleParseError(error.code);
 			    deferred.resolve({'results':{'error': error.message, 'code': error.code}});
 			  }
 			});
 			return deferred.promise;
 		};
 
-		// Database.prototype.login = function(data){
-		// 	var deferred = $q.defer();
-		// 	Parse.User.logIn(data.username, data.password, {
-		// 		success: function(user) {
-		// 			LocalStorage.setUser();
-		// 			deferred.resolve({'results': user});
-		// 		},
-		// 		error: function(user, error) {
-		// 			deferred.resolve({'results':{'error': error.message, 'code': error.code}});
-		// 		}
-		// 	});
-		// 	return deferred.promise;
-		// };
+		Database.prototype.login = function(data){
+			var deferred = $q.defer();
+			Parse.User.logIn(data.username, data.password, {
+				success: function(data) {
+					var results = new Database();
+					results.setPointerMapping(pointerMapping);
+					deferred.resolve({'results': results.decodeData(results.stripObject(data))});
+				},
+				error: function(data, error) {
+					handleParseError(error.code);
+					deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+				}
+			});
+			return deferred.promise;
+		};
 
-		// Database.prototype.logout = function(){
-		// 	Parse.User.logOut();
-		// 	LocalStorage.setUser();
-		// };
+		Database.prototype.logout = function(){
+			Parse.User.logOut();
+		};
 
-		// Database.prototype.updateUser = function(data){
-		// 	var currentUser = Parse.User.current();
-		// 	var loginreturnData = {
-		// 		'username': currentUser.attributes.username,
-		// 		"password": data.password,
-		// 	};
-		// 	var deferred = $q.defer();
-		// 	Database.prototype.login(loginreturnData).then(function(returnData){
-	 //      if (!returnData.results.error) {
-		// 			currentUser.set("password", data.newpassword);
-		// 			currentUser.set("email", data.email);
-		// 		if(currentUser)
-		// 		{
-		// 			currentUser.save(null, {
-		// 				success: function(currentUser) {
-		// 					LocalStorage.setUser();
-		// 					deferred.resolve({'results': currentUser});
-		// 				},
-		// 				error: function(currentUser, error) {
-		// 					deferred.resolve({'results':{'error': error.message, 'code': error.code}});
-		// 				}
-		// 			});
-		// 		}
-  //       } else{
-  //           deferred.resolve({'results':{'error': returnData.results.error, 'code': returnData.results.code}});
-  //       }
-  //     });
-		// 	return deferred.promise;
-		// };
+		Database.prototype.updateUser = function(data){
+			var currentUser = Parse.User.current();
+			var loginreturnData = {
+				'username': currentUser.attributes.username,
+				"password": data.password,
+			};
+			var deferred = $q.defer();
+			Database.prototype.login(loginreturnData).then(function(returnData){
+	      if (!returnData.results.error) {
+					currentUser.set("password", data.newpassword);
+					currentUser.set("email", data.email);
+				if(currentUser)
+				{
+					currentUser.save(null, {
+						success: function(currentUser) {
+							deferred.resolve({'results': currentUser});
+						},
+						error: function(currentUser, error) {
+							handleParseError(error.code);
+							deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+						}
+					});
+				}
+        } else{
+            deferred.resolve({'results':{'error': returnData.results.error, 'code': returnData.results.code}});
+        }
+      });
+			return deferred.promise;
+		};
 
 		// REST
 
@@ -177,6 +179,7 @@ angular
 					deferred.resolve({'results': results.decodeData(results.stripObject(data))});
 				},
 				error: function(error) {
+					handleParseError(error.code);
 					deferred.resolve({'results':{'error': error.message, 'code': error.code}});
 				}
 			});
@@ -202,6 +205,7 @@ angular
 					deferred.resolve({'results': results.decodeData(results.stripArray(data))});
 				},
 				error: function(error) {
+					handleParseError(error.code);
 					deferred.resolve({'results':{'error': error.message, 'code': error.code}});
 				}
 			});
@@ -232,6 +236,7 @@ angular
 			    });
 			  },
 			  error: function(error) {
+			  	handleParseError(error.code);
 			    deferred.resolve({'results':{'error': error.message, 'code': error.code}});
 			  }
 			});
@@ -251,6 +256,7 @@ angular
 					    	deferred.resolve({'results': "Object " + data.id + " has been deleted"});
 						  },
 						  error: function(data, error) {
+						  	handleParseError(error.code);
 						    deferred.resolve({'results':{'error': error.message, 'code': error.code}});
 						  }
 						});
@@ -264,6 +270,16 @@ angular
 			});
 			return deferred.promise;
 		};
+
+
+		function handleParseError(err) {
+	  switch (err.code) {
+	    case Parse.Error.INVALID_SESSION_TOKEN:
+	      Parse.User.logOut();
+	      break;
+		  }
+		}
+
 	});
 
 	
