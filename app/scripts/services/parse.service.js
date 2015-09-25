@@ -11,21 +11,21 @@ angular
 	function database($rootScope, $q) 
 	{
 		
-		var parseParams = {include: "_include", limit: "_limit", skip: "_skip", where: "_where", keys: "_select", order: "_order"}
+		var parseParams = {include: "_include", limit: "_limit", skip: "_skip", where: "_where", keys: "_select", order: "_order"};
 		var pointerMapping;
 
 		// set Parse keys
-		this.setKeys = function(applicationId, javascriptKey){
+		database.prototype.setKeys = function(applicationId, javascriptKey){
 			Parse.initialize(applicationId, javascriptKey);
-		}
+		};
 
 		// Set mapping Pointer
-		this.setPointerMapping = function(setting){
+		database.prototype.setPointerMapping = function(setting){
 			pointerMapping = setting;
-		}
+		};
 
 		// Encode parse pointer from objectId to {__type: "Pointer", className: table, objectId: objectId}
-		this.encodeQuery = function(query){
+		database.prototype.encodeQuery = function(query){
 			var keys = Object.keys(query);
 			for (var i = 0; i < keys.length; i++) 
 			{
@@ -35,36 +35,36 @@ angular
 		        className: pointerMapping[keys[i]],
 		        objectId: query[keys[i]]
 			    };
-				};
+				}
 
 				if (typeof(query[keys[i]]) === 'object') {
-					this.encodeQuery(query[keys[i]]);
-				};
+					database.prototype.encodeQuery(query[keys[i]]);
+				}
 			}
-			return query
+			return query;
 		};
 
 		// Decode parse pointer from object type to a string of objectId only
-		this.decodeData = function(query){
+		database.prototype.decodeData = function(query){
 			var keys = {};
-			if (typeof(query) === 'object' && query != null) {
+			if (typeof(query) === 'object' && query !== null) {
 				keys = Object.keys(query);
 			}
 			for (var i = 0; i < keys.length; i++) 
 			{
 				if (pointerMapping[keys[i]]) {
-					query[keys[i]] = query[keys[i]].objectId
-				};
+					query[keys[i]] = query[keys[i]].objectId;
+				}
 				if (typeof(query[keys[i]]) === 'object') {
-					this.decodeData(query[keys[i]]);
-				};
+					database.prototype.decodeData(query[keys[i]]);
+				}
 			}
-			return query
+			return query;
 		};
 
 		// TODO: these two functions are not well written
 		// Strip down array of results to remove unnecessary data
-		this.stripArray = function(data){
+		database.prototype.stripArray = function(data){
 			var objects = [];
 			var keys = [];
 			for (var x = 0; x < data.length; x++) {
@@ -73,7 +73,7 @@ angular
 				object.objectId = data[x].id;
 				for (var y = 0; y < keys[x].length; y++) {
 					if (data[x].attributes[keys[x][y]].attributes) {
-						object[keys[x][y]] = this.stripObject(data[x].attributes[keys[x][y]]);
+						object[keys[x][y]] = database.prototype.stripObject(data[x].attributes[keys[x][y]]);
 					} else {
 						object[keys[x][y]] = data[x].attributes[keys[x][y]];
 					}
@@ -83,14 +83,14 @@ angular
 			return objects;
 		};
 
-		this.stripObject = function(data){
+		database.prototype.stripObject = function(data){
 			var object = {};
 			var keys = Object.keys(data.attributes);
 			object.objectId = data.id;
 			for (var i = 0; i < keys.length; i++) {
 				object[keys[i]] = data.attributes[keys[i]];
 				if (data.attributes[keys[i]].attributes) {
-					object[keys[i]] = this.stripObject(data.attributes[keys[i]]);
+					object[keys[i]] = database.prototype.stripObject(data.attributes[keys[i]]);
 				} else {
 					object[keys[i]] = data.attributes[keys[i]];
 				}
@@ -99,7 +99,7 @@ angular
 		};
 
 		// Users
-		// this.signup = function(data){
+		// database.prototype.signup = function(data){
 		// 	var user = new Parse.User();
 		// 	user.set("username", data.username);
 		// 	user.set("password", data.password);
@@ -118,7 +118,7 @@ angular
 		// 	return deferred.promise;
 		// };
 
-		// this.login = function(data){
+		// database.prototype.login = function(data){
 		// 	var deferred = $q.defer();
 		// 	Parse.User.logIn(data.username, data.password, {
 		// 		success: function(user) {
@@ -132,19 +132,19 @@ angular
 		// 	return deferred.promise;
 		// };
 
-		// this.logout = function(){
+		// database.prototype.logout = function(){
 		// 	Parse.User.logOut();
 		// 	LocalStorage.setUser();
 		// };
 
-		// this.updateUser = function(data){
+		// database.prototype.updateUser = function(data){
 		// 	var currentUser = Parse.User.current();
 		// 	var loginreturnData = {
 		// 		'username': currentUser.attributes.username,
 		// 		"password": data.password,
 		// 	};
 		// 	var deferred = $q.defer();
-		// 	this.login(loginreturnData).then(function(returnData){
+		// 	database.prototype.login(loginreturnData).then(function(returnData){
 	 //      if (!returnData.results.error) {
 		// 			currentUser.set("password", data.newpassword);
 		// 			currentUser.set("email", data.email);
@@ -169,10 +169,10 @@ angular
 
 		// REST
 
-		this.post = function(table_name, data){
+		database.prototype.post = function(table_name, data){
 			var table = new (Parse.Object.extend(table_name))();
 			var deferred = $q.defer();
-			this.encodeQuery(data);
+			database.prototype.encodeQuery(data);
 			table.save(data, {
 				success: function(data) {
 					var results = new database();
@@ -186,8 +186,8 @@ angular
 			return deferred.promise;
 		};
 
-		this.get = function(table_name, params){
-			this.encodeQuery(params);
+		database.prototype.get = function(table_name, params){
+			database.prototype.encodeQuery(params);
 			var query = new Parse.Query(Parse.Object.extend(table_name));
 			var deferred = $q.defer();
 
@@ -195,8 +195,8 @@ angular
 			for (var i = 0; i < keys.length; i++) {
 				if (parseParams[keys[i]]) {
 					query[parseParams[keys[i]]] = params[keys[i]];
-				};
-			};
+				}
+			}
 
 			query.find({
 				success: function(data) {
@@ -211,35 +211,34 @@ angular
 			return deferred.promise;
 		};
 
-		this.put = function(table_name, objectId, data)
+		database.prototype.put = function(table_name, objectId, data)
 		{
 			var deferred = $q.defer();
 			var query = new Parse.Query(Parse.Object.extend(table_name));
 			query.equalTo("objectId", objectId);
-			console.log(objectId)
 			query.first({
 			  success: function(object) {
 			  	var keys = Object.keys(data);
-			  	console.log(keys);
 			  	for (var i = 0; i < keys.length; i++) {
-			  		console.log(object.attributes[keys[i]])
 			  		object.set(keys[i], data[keys[i]]);
-			  	};
+			  	}
 			    var result = object.save();
-			    var keys = Object.keys(result);
-			    console.log(result)
-			    console.log(result._rejected)
-			    if (result._resolved) {
-			    	deferred.resolve({'results': {'code': 200}});
-			    } else
-			    {
-			    	deferred.resolve({'results': {'error': 'failed to update'}});
-			    }
+			    result.then(function(){
+			    	var results = new database();
+						results.setPointerMapping(pointerMapping);
+			    	if (result._resolved) {
+				    	deferred.resolve({'results': results.decodeData(results.stripArray(result._result))});
+				    } else
+				    {
+				    	deferred.resolve({'results':{'error': "Failed to update"}});
+				    }
+			    });
 			  },
 			  error: function(error) {
 			    deferred.resolve({'results':{'error': error.message, 'code': error.code}});
 			  }
 			});
 			return deferred.promise;
-		}
+		};
+
 	}
