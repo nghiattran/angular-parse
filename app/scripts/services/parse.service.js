@@ -99,73 +99,73 @@ angular
 		};
 
 		// Users
-		this.signup = function(data){
-			var user = new Parse.User();
-			user.set("username", data.username);
-			user.set("password", data.password);
-			user.set("email", data.email);
+		// this.signup = function(data){
+		// 	var user = new Parse.User();
+		// 	user.set("username", data.username);
+		// 	user.set("password", data.password);
+		// 	user.set("email", data.email);
 
-			var deferred = $q.defer();
-			user.signUp(null, {
-			  success: function(user) {
-			    LocalStorage.setUser();
-			    deferred.resolve({'results': user});
-			  },
-			  error: function(user, error) {
-			    deferred.resolve({'results':{'error': error.message, 'code': error.code}});
-			  }
-			});
-			return deferred.promise;
-		};
+		// 	var deferred = $q.defer();
+		// 	user.signUp(null, {
+		// 	  success: function(user) {
+		// 	    LocalStorage.setUser();
+		// 	    deferred.resolve({'results': user});
+		// 	  },
+		// 	  error: function(user, error) {
+		// 	    deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+		// 	  }
+		// 	});
+		// 	return deferred.promise;
+		// };
 
-		this.login = function(data){
-			var deferred = $q.defer();
-			Parse.User.logIn(data.username, data.password, {
-				success: function(user) {
-					LocalStorage.setUser();
-					deferred.resolve({'results': user});
-				},
-				error: function(user, error) {
-					deferred.resolve({'results':{'error': error.message, 'code': error.code}});
-				}
-			});
-			return deferred.promise;
-		};
+		// this.login = function(data){
+		// 	var deferred = $q.defer();
+		// 	Parse.User.logIn(data.username, data.password, {
+		// 		success: function(user) {
+		// 			LocalStorage.setUser();
+		// 			deferred.resolve({'results': user});
+		// 		},
+		// 		error: function(user, error) {
+		// 			deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+		// 		}
+		// 	});
+		// 	return deferred.promise;
+		// };
 
-		this.logout = function(){
-			Parse.User.logOut();
-			LocalStorage.setUser();
-		};
+		// this.logout = function(){
+		// 	Parse.User.logOut();
+		// 	LocalStorage.setUser();
+		// };
 
-		this.updateUser = function(data){
-			var currentUser = Parse.User.current();
-			var loginreturnData = {
-				'username': currentUser.attributes.username,
-				"password": data.password,
-			};
-			var deferred = $q.defer();
-			this.login(loginreturnData).then(function(returnData){
-	      if (!returnData.results.error) {
-					currentUser.set("password", data.newpassword);
-					currentUser.set("email", data.email);
-				if(currentUser)
-				{
-					currentUser.save(null, {
-						success: function(currentUser) {
-							LocalStorage.setUser();
-							deferred.resolve({'results': currentUser});
-						},
-						error: function(currentUser, error) {
-							deferred.resolve({'results':{'error': error.message, 'code': error.code}});
-						}
-					});
-				}
-        } else{
-            deferred.resolve({'results':{'error': returnData.results.error, 'code': returnData.results.code}});
-        }
-      });
-			return deferred.promise;
-		};
+		// this.updateUser = function(data){
+		// 	var currentUser = Parse.User.current();
+		// 	var loginreturnData = {
+		// 		'username': currentUser.attributes.username,
+		// 		"password": data.password,
+		// 	};
+		// 	var deferred = $q.defer();
+		// 	this.login(loginreturnData).then(function(returnData){
+	 //      if (!returnData.results.error) {
+		// 			currentUser.set("password", data.newpassword);
+		// 			currentUser.set("email", data.email);
+		// 		if(currentUser)
+		// 		{
+		// 			currentUser.save(null, {
+		// 				success: function(currentUser) {
+		// 					LocalStorage.setUser();
+		// 					deferred.resolve({'results': currentUser});
+		// 				},
+		// 				error: function(currentUser, error) {
+		// 					deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+		// 				}
+		// 			});
+		// 		}
+  //       } else{
+  //           deferred.resolve({'results':{'error': returnData.results.error, 'code': returnData.results.code}});
+  //       }
+  //     });
+		// 	return deferred.promise;
+		// };
 
 		// REST
 
