@@ -1,31 +1,27 @@
 
 'use strict';
-
+/** @ngInject */
 angular
     .module('parseServies', [
   	])
-  .service('parseServies', database);
-
-	/** @ngInject */
-	
-	function database($rootScope, $q) 
+  .service('parseServies', function Database($rootScope, $q) 
 	{
 		
 		var parseParams = {include: "_include", limit: "_limit", skip: "_skip", where: "_where", keys: "_select", order: "_order"};
 		var pointerMapping;
 
 		// set Parse keys
-		database.prototype.setKeys = function(applicationId, javascriptKey){
+		Database.prototype.setKeys = function(applicationId, javascriptKey){
 			Parse.initialize(applicationId, javascriptKey);
 		};
 
 		// Set mapping Pointer
-		database.prototype.setPointerMapping = function(setting){
+		Database.prototype.setPointerMapping = function(setting){
 			pointerMapping = setting;
 		};
 
 		// Encode parse pointer from objectId to {__type: "Pointer", className: table, objectId: objectId}
-		database.prototype.encodeQuery = function(query){
+		Database.prototype.encodeQuery = function(query){
 			var keys = Object.keys(query);
 			for (var i = 0; i < keys.length; i++) 
 			{
@@ -38,14 +34,14 @@ angular
 				}
 
 				if (typeof(query[keys[i]]) === 'object') {
-					database.prototype.encodeQuery(query[keys[i]]);
+					Database.prototype.encodeQuery(query[keys[i]]);
 				}
 			}
 			return query;
 		};
 
 		// Decode parse pointer from object type to a string of objectId only
-		database.prototype.decodeData = function(query){
+		Database.prototype.decodeData = function(query){
 			var keys = {};
 			if (typeof(query) === 'object' && query !== null) {
 				keys = Object.keys(query);
@@ -56,7 +52,7 @@ angular
 					query[keys[i]] = query[keys[i]].objectId;
 				}
 				if (typeof(query[keys[i]]) === 'object') {
-					database.prototype.decodeData(query[keys[i]]);
+					Database.prototype.decodeData(query[keys[i]]);
 				}
 			}
 			return query;
@@ -64,7 +60,7 @@ angular
 
 		// TODO: these two functions are not well written
 		// Strip down array of results to remove unnecessary data
-		database.prototype.stripArray = function(data){
+		Database.prototype.stripArray = function(data){
 			var objects = [];
 			var keys = [];
 			for (var x = 0; x < data.length; x++) {
@@ -73,7 +69,7 @@ angular
 				object.objectId = data[x].id;
 				for (var y = 0; y < keys[x].length; y++) {
 					if (data[x].attributes[keys[x][y]].attributes) {
-						object[keys[x][y]] = database.prototype.stripObject(data[x].attributes[keys[x][y]]);
+						object[keys[x][y]] = Database.prototype.stripObject(data[x].attributes[keys[x][y]]);
 					} else {
 						object[keys[x][y]] = data[x].attributes[keys[x][y]];
 					}
@@ -83,14 +79,14 @@ angular
 			return objects;
 		};
 
-		database.prototype.stripObject = function(data){
+		Database.prototype.stripObject = function(data){
 			var object = {};
 			var keys = Object.keys(data.attributes);
 			object.objectId = data.id;
 			for (var i = 0; i < keys.length; i++) {
 				object[keys[i]] = data.attributes[keys[i]];
 				if (data.attributes[keys[i]].attributes) {
-					object[keys[i]] = database.prototype.stripObject(data.attributes[keys[i]]);
+					object[keys[i]] = Database.prototype.stripObject(data.attributes[keys[i]]);
 				} else {
 					object[keys[i]] = data.attributes[keys[i]];
 				}
@@ -99,7 +95,7 @@ angular
 		};
 
 		// Users
-		// database.prototype.signup = function(data){
+		// Database.prototype.signup = function(data){
 		// 	var user = new Parse.User();
 		// 	user.set("username", data.username);
 		// 	user.set("password", data.password);
@@ -118,7 +114,7 @@ angular
 		// 	return deferred.promise;
 		// };
 
-		// database.prototype.login = function(data){
+		// Database.prototype.login = function(data){
 		// 	var deferred = $q.defer();
 		// 	Parse.User.logIn(data.username, data.password, {
 		// 		success: function(user) {
@@ -132,19 +128,19 @@ angular
 		// 	return deferred.promise;
 		// };
 
-		// database.prototype.logout = function(){
+		// Database.prototype.logout = function(){
 		// 	Parse.User.logOut();
 		// 	LocalStorage.setUser();
 		// };
 
-		// database.prototype.updateUser = function(data){
+		// Database.prototype.updateUser = function(data){
 		// 	var currentUser = Parse.User.current();
 		// 	var loginreturnData = {
 		// 		'username': currentUser.attributes.username,
 		// 		"password": data.password,
 		// 	};
 		// 	var deferred = $q.defer();
-		// 	database.prototype.login(loginreturnData).then(function(returnData){
+		// 	Database.prototype.login(loginreturnData).then(function(returnData){
 	 //      if (!returnData.results.error) {
 		// 			currentUser.set("password", data.newpassword);
 		// 			currentUser.set("email", data.email);
@@ -169,13 +165,13 @@ angular
 
 		// REST
 
-		database.prototype.post = function(table_name, data){
+		Database.prototype.post = function(table_name, data){
 			var table = new (Parse.Object.extend(table_name))();
 			var deferred = $q.defer();
-			database.prototype.encodeQuery(data);
+			Database.prototype.encodeQuery(data);
 			table.save(data, {
 				success: function(data) {
-					var results = new database();
+					var results = new Database();
 					results.setPointerMapping(pointerMapping);
 					deferred.resolve({'results': results.decodeData(results.stripObject(data))});
 				},
@@ -186,8 +182,8 @@ angular
 			return deferred.promise;
 		};
 
-		database.prototype.get = function(table_name, params){
-			database.prototype.encodeQuery(params);
+		Database.prototype.get = function(table_name, params){
+			Database.prototype.encodeQuery(params);
 			var query = new Parse.Query(Parse.Object.extend(table_name));
 			var deferred = $q.defer();
 
@@ -200,7 +196,7 @@ angular
 
 			query.find({
 				success: function(data) {
-					var results = new database();
+					var results = new Database();
 					results.setPointerMapping(pointerMapping);
 					deferred.resolve({'results': results.decodeData(results.stripArray(data))});
 				},
@@ -211,7 +207,7 @@ angular
 			return deferred.promise;
 		};
 
-		database.prototype.put = function(table_name, objectId, data)
+		Database.prototype.put = function(table_name, objectId, data)
 		{
 			var deferred = $q.defer();
 			var query = new Parse.Query(Parse.Object.extend(table_name));
@@ -224,7 +220,7 @@ angular
 			  	}
 			    var result = object.save();
 			    result.then(function(){
-			    	var results = new database();
+			    	var results = new Database();
 						results.setPointerMapping(pointerMapping);
 			    	if (result._resolved) {
 				    	deferred.resolve({'results': results.decodeData(results.stripArray(result._result))});
@@ -241,4 +237,32 @@ angular
 			return deferred.promise;
 		};
 
-	}
+		Database.prototype.delete = function(table_name, objectId)
+		{
+			var deferred = $q.defer();
+			var query = new Parse.Query(Parse.Object.extend(table_name));
+			query.equalTo("objectId", objectId);
+			query.first({
+			  success: function(object) {
+			  	if (object) {
+				  	object.destroy({
+						  success: function(data) {
+					    	deferred.resolve({'results': "Object " + data.id + " has been deleted"});
+						  },
+						  error: function(data, error) {
+						    deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+						  }
+						});
+					} else {
+						deferred.resolve({'results':{'error': "Object does not exist", 'code': 404}});
+					}	
+			  },
+			  error: function(error) {
+			    deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+			  }
+			});
+			return deferred.promise;
+		};
+	});
+
+	
