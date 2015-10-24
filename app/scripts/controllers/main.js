@@ -8,7 +8,7 @@
  * Controller of the angularParseApp
  */
 angular.module('angularParseApp')
-  .controller('MainCtrl', function (parseServies) {
+  .controller('MainCtrl', function (parseServies, $scope) {
 
   parseServies.setKeys("aNcLKlFlOSSlgFHdyelHlMLzgVxUB5MutK2Dsn4K", "zwCxqHYtqjjoubvqpoVhqkN5kczWcPUKwVI3vmMk");
   parseServies.setPointerMapping({createdBy: '_User', onShelf: 'Shelves'});
@@ -44,16 +44,31 @@ angular.module('angularParseApp')
   //   }
   // })
   
-  var data = {
-    'name': 'has changed',
-  }
-  parseServies.put('Shelves', 'HmHH5c1T6H', data).then(function(data){
-    if (!data.results.error) {
-      console.log(data.results);
-    } else{
-      console.log(data.results.error);
-      $scope.login_error = 'Your username or password is incorrect';
-    }
-  })
+  // var data = {
+  //   'name': 'has changed',
+  // }
+  // parseServies.put('Shelves', 'vCRrfgzT4r', data).then(function(data){
+  //   if (!data.results.error) {
+  //     console.log(data.results);
+  //   } else{
+  //     console.log(data.results.error);
+  //     $scope.login_error = 'Your username or password is incorrect';
+  //   }
+  // })
 
+  $scope.post = function(data)
+  {
+    // var payload = {
+    //   file: data.file || null,
+    //   name: data.name,
+    // }
+    // parseServies.post('File',payload).then(function(data){
+    //   if (!data.results.error) {
+    //     console.log(data.results);
+    //   } else{
+    //     console.log(data.results.error);
+    //     $scope.login_error = 'Your username or password is incorrect';
+    //   }
+    // })
+  }
 });

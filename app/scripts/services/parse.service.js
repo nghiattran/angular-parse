@@ -215,25 +215,31 @@ angular
 		Database.prototype.put = function(table_name, objectId, data)
 		{
 			var deferred = $q.defer();
+			console.log(data)
 			var query = new Parse.Query(Parse.Object.extend(table_name));
 			query.equalTo("objectId", objectId);
 			query.first({
 			  success: function(object) {
 			  	var keys = Object.keys(data);
-			  	for (var i = 0; i < keys.length; i++) {
+			  	if (object) {
+			  		for (var i = 0; i < keys.length; i++) {
 			  		object.set(keys[i], data[keys[i]]);
+				  	}
+				    var result = object.save();
+				    result.then(function(){
+				    	var results = new Database();
+							results.setPointerMapping(pointerMapping);
+				    	if (result._resolved) {
+					    	deferred.resolve({'results': results.decodeData(results.stripArray(result._result))});
+					    } else
+					    {
+					    	deferred.resolve({'results':{'error': "Failed to update"}});
+					    }
+				    });
+			  	} else {
+			  		deferred.resolve({'results':{'error': "This object does not exist", 'code': 404}});
 			  	}
-			    var result = object.save();
-			    result.then(function(){
-			    	var results = new Database();
-						results.setPointerMapping(pointerMapping);
-			    	if (result._resolved) {
-				    	deferred.resolve({'results': results.decodeData(results.stripArray(result._result))});
-				    } else
-				    {
-				    	deferred.resolve({'results':{'error': "Failed to update"}});
-				    }
-			    });
+			  	
 			  },
 			  error: function(error) {
 			  	handleParseError(error.code);
@@ -273,11 +279,11 @@ angular
 
 
 		function handleParseError(err) {
-	  switch (err.code) {
-	    case Parse.Error.INVALID_SESSION_TOKEN:
-	      Parse.User.logOut();
-	      break;
-		  }
+			switch (err.code) {
+				case Parse.Error.INVALID_SESSION_TOKEN:
+					Parse.User.logOut();
+					break;
+			}
 		}
 
 	});
