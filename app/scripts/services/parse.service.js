@@ -4,18 +4,93 @@
 angular
     .module('parseServies', [
   	])
-  .service('parseServies', function Database($rootScope, $q) 
+  .service('parseServies', function Database($rootScope, $q, $http) 
 	{
-		
+		var dataType = ['string', 'pointer', 'time', 'bolean', 'number'];
 		var parseParams = {include: "_include", limit: "_limit", skip: "_skip", where: "_where", keys: "_select", order: "_order"};
-		var pointerMapping;
+		var pointerMapping = {};
+
+		// Initialize database
+		Database.prototype.init = function()
+		{
+			this.setKeys().then(function(data){
+				if (data.error !== undefined) {
+					console.error(data.error.message);
+				};
+			})
+			this.modelDatabase().then(function(data){
+				if (data.error !== undefined) {
+					console.error(data.error.message);
+				};
+			})
+		}
+
+		// Modeling database and validate field
+		Database.prototype.modelDatabase = function() {
+			var defer = $q.defer();
+			this.readDatabaseStruct().then(function(data){
+				const tables = data;
+				for (var table in tables) {
+					for (var column in tables[table]) {
+						if (dataType.indexOf(tables[table][column]) === -1 && dataType.indexOf(tables[table][column]['_type']) ===-1)
+						{
+							defer.resolve({error:{message: 'Invalid data type'}});
+							return defer.promise;
+						} else if (tables[table][column]['_type'] == 'pointer')
+						{
+							// Set mapping pointer
+							pointerMapping[column] = tables[table][column]['to'];
+						}
+					};
+				};
+				defer.resolve({results:{message: 'Database contructed successfully', code: 202}});
+			});
+			return defer.promise;
+		}
+
+		// Read in database structure from dataStruc.json
+		Database.prototype.readDatabaseStruct = function() {
+	        var defer = $q.defer();
+	        $http.get('dataStruc.json')
+	            .success(function(data) {
+	                defer.resolve(data);
+	            })
+	            .error(function() {
+	                defer.reject('Could not find dataStruc.json');
+	            });
+
+	        return defer.promise;
+	    }
+
+	    // Read in database structure from dataStruc.json
+		Database.prototype.readParseKeys = function() {
+	        var defer = $q.defer();
+	        $http.get('keys.json')
+	            .success(function(data) {
+	                defer.resolve(data);
+	            })
+	            .error(function() {
+	                defer.reject('Could not find keys.json');
+	            });
+
+	        return defer.promise;
+	    }
 
 		// set Parse keys
 		Database.prototype.setKeys = function(applicationId, javascriptKey){
-			Parse.initialize(applicationId, javascriptKey);
+			var defer = $q.defer();
+			this.readParseKeys().then(function(data){
+				if (data['applicationId'] === undefined || data['javascriptKey'] === undefined) {
+					defer.resolve({error:{message: 'One or both keys for Parse are missing'}});
+				} else {
+					Parse.initialize(data.applicationId, data.javascriptKey);
+					defer.resolve({results:{message: 'Successfully initialized', code: 202}});
+				}
+			})
+			return defer.promise;
 		};
 
-		// Set mapping Pointer
+		// Mapping Pointer
 		Database.prototype.setPointerMapping = function(setting){
 			pointerMapping = setting;
 		};
@@ -101,35 +176,35 @@ angular
 			user.set("password", data.password);
 			user.set("email", data.email);
 
-			var deferred = $q.defer();
+			var defer = $q.defer();
 			user.signUp(null, {
 			  success: function(data) {
 			    var results = new Database();
 					results.setPointerMapping(pointerMapping);
-					deferred.resolve({'results': results.decodeData(results.stripObject(data))});
+					defer.resolve({'results': results.decodeData(results.stripObject(data))});
 			  },
 			  error: function(data, error) {
 			  	handleParseError(error.code);
-			    deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+			    defer.resolve({'results':{'error': error.message, 'code': error.code}});
 			  }
 			});
-			return deferred.promise;
+			return defer.promise;
 		};
 
 		Database.prototype.login = function(data){
-			var deferred = $q.defer();
+			var defer = $q.defer();
 			Parse.User.logIn(data.username, data.password, {
 				success: function(data) {
 					var results = new Database();
 					results.setPointerMapping(pointerMapping);
-					deferred.resolve({'results': results.decodeData(results.stripObject(data))});
+					defer.resolve({'results': results.decodeData(results.stripObject(data))});
 				},
 				error: function(data, error) {
 					handleParseError(error.code);
-					deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+					defer.resolve({'results':{'error': error.message, 'code': error.code}});
 				}
 			});
-			return deferred.promise;
+			return defer.promise;
 		};
 
 		Database.prototype.logout = function(){
@@ -142,7 +217,7 @@ angular
 				'username': currentUser.attributes.username,
 				"password": data.password,
 			};
-			var deferred = $q.defer();
+			var defer = $q.defer();
 			Database.prototype.login(loginreturnData).then(function(returnData){
 	      if (!returnData.results.error) {
 					currentUser.set("password", data.newpassword);
@@ -151,45 +226,45 @@ angular
 				{
 					currentUser.save(null, {
 						success: function(currentUser) {
-							deferred.resolve({'results': currentUser});
+							defer.resolve({'results': currentUser});
 						},
 						error: function(currentUser, error) {
 							handleParseError(error.code);
-							deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+							defer.resolve({'results':{'error': error.message, 'code': error.code}});
 						}
 					});
 				}
         } else{
-            deferred.resolve({'results':{'error': returnData.results.error, 'code': returnData.results.code}});
+            defer.resolve({'results':{'error': returnData.results.error, 'code': returnData.results.code}});
         }
       });
-			return deferred.promise;
+			return defer.promise;
 		};
 
 		// REST
 
 		Database.prototype.post = function(table_name, data){
 			var table = new (Parse.Object.extend(table_name))();
-			var deferred = $q.defer();
+			var defer = $q.defer();
 			Database.prototype.encodeQuery(data);
 			table.save(data, {
 				success: function(data) {
 					var results = new Database();
 					results.setPointerMapping(pointerMapping);
-					deferred.resolve({'results': results.decodeData(results.stripObject(data))});
+					defer.resolve({'results': results.decodeData(results.stripObject(data))});
 				},
 				error: function(error) {
 					handleParseError(error.code);
-					deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+					defer.resolve({'results':{'error': error.message, 'code': error.code}});
 				}
 			});
-			return deferred.promise;
+			return defer.promise;
 		};
 
 		Database.prototype.get = function(table_name, params){
 			Database.prototype.encodeQuery(params);
 			var query = new Parse.Query(Parse.Object.extend(table_name));
-			var deferred = $q.defer();
+			var defer = $q.defer();
 
 			var keys = Object.keys(params);
 			for (var i = 0; i < keys.length; i++) {
@@ -202,20 +277,19 @@ angular
 				success: function(data) {
 					var results = new Database();
 					results.setPointerMapping(pointerMapping);
-					deferred.resolve({'results': results.decodeData(results.stripArray(data))});
+					defer.resolve({'results': results.decodeData(results.stripArray(data))});
 				},
 				error: function(error) {
 					handleParseError(error.code);
-					deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+					defer.resolve({'results':{'error': error.message, 'code': error.code}});
 				}
 			});
-			return deferred.promise;
+			return defer.promise;
 		};
 
 		Database.prototype.put = function(table_name, objectId, data)
 		{
-			var deferred = $q.defer();
-			console.log(data)
+			var defer = $q.defer();
 			var query = new Parse.Query(Parse.Object.extend(table_name));
 			query.equalTo("objectId", objectId);
 			query.first({
@@ -230,28 +304,28 @@ angular
 				    	var results = new Database();
 							results.setPointerMapping(pointerMapping);
 				    	if (result._resolved) {
-					    	deferred.resolve({'results': results.decodeData(results.stripArray(result._result))});
+					    	defer.resolve({'results': results.decodeData(results.stripArray(result._result))});
 					    } else
 					    {
-					    	deferred.resolve({'results':{'error': "Failed to update"}});
+					    	defer.resolve({'results':{'error': "Failed to update"}});
 					    }
 				    });
 			  	} else {
-			  		deferred.resolve({'results':{'error': "This object does not exist", 'code': 404}});
+			  		defer.resolve({'results':{'error': "This object does not exist", 'code': 404}});
 			  	}
 			  	
 			  },
 			  error: function(error) {
 			  	handleParseError(error.code);
-			    deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+			    defer.resolve({'results':{'error': error.message, 'code': error.code}});
 			  }
 			});
-			return deferred.promise;
+			return defer.promise;
 		};
 
 		Database.prototype.delete = function(table_name, objectId)
 		{
-			var deferred = $q.defer();
+			var defer = $q.defer();
 			var query = new Parse.Query(Parse.Object.extend(table_name));
 			query.equalTo("objectId", objectId);
 			query.first({
@@ -259,22 +333,22 @@ angular
 			  	if (object) {
 				  	object.destroy({
 						  success: function(data) {
-					    	deferred.resolve({'results': "Object " + data.id + " has been deleted"});
+					    	defer.resolve({'results': "Object " + data.id + " has been deleted"});
 						  },
 						  error: function(data, error) {
 						  	handleParseError(error.code);
-						    deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+						    defer.resolve({'results':{'error': error.message, 'code': error.code}});
 						  }
 						});
 					} else {
-						deferred.resolve({'results':{'error': "Object does not exist", 'code': 404}});
+						defer.resolve({'results':{'error': "Object does not exist", 'code': 404}});
 					}	
 			  },
 			  error: function(error) {
-			    deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+			    defer.resolve({'results':{'error': error.message, 'code': error.code}});
 			  }
 			});
-			return deferred.promise;
+			return defer.promise;
 		};
 
 
