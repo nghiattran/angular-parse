@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/nghiattran/angular-parse.svg?branch=travis)](https://travis-ci.org/nghiattran/angular-parse)
+
 # Work on progress
 
 <!-- # angular-parse
