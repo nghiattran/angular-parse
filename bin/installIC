@@ -2,6 +2,7 @@
 
 echo "Installing grunt"
 npm install -g grunt
+npm install grunt-cli
 
 echo "Installing bower"
 npm install -g bower
