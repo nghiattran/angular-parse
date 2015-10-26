@@ -10,6 +10,8 @@ angular
 		var parseParams = {include: "_include", limit: "_limit", skip: "_skip", where: "_where", keys: "_select", order: "_order"};
 		var pointerMapping = {};
 
+		// TODO reading all credentials from external files and make all functions wait
+		// untill it finishes reading
 		// Initialize database
 		Database.prototype.init = function()
 		{
@@ -184,21 +186,24 @@ angular
 
 		// Users
 		Database.prototype.signup = function(data){
+			var defer = $q.defer();
+			if (!data.username || !data.password) {
+				defer.resolve({results:{error: 'Missing username or password', code: error.code}});
+				return defer.promise;
+			}
 			var user = new Parse.User();
 			user.set("username", data.username);
 			user.set("password", data.password);
 			user.set("email", data.email);
-
-			var defer = $q.defer();
 			user.signUp(null, {
 			  success: function(data) {
 			    var results = new Database();
 					results.setPointerMapping(pointerMapping);
-					defer.resolve({'results': results.decodeData(results.stripObject(data))});
+					defer.resolve({results: results.decodeData(results.stripObject(data))});
 			  },
 			  error: function(data, error) {
 			  	handleParseError(error.code);
-			    defer.resolve({'results':{'error': error.message, 'code': error.code}});
+			    defer.resolve({results:{error: error.message, code: error.code}});
 			  }
 			});
 			return defer.promise;
@@ -210,11 +215,11 @@ angular
 				success: function(data) {
 					var results = new Database();
 					results.setPointerMapping(pointerMapping);
-					defer.resolve({'results': results.decodeData(results.stripObject(data))});
+					defer.resolve({results: results.decodeData(results.stripObject(data))});
 				},
 				error: function(data, error) {
 					handleParseError(error.code);
-					defer.resolve({'results':{'error': error.message, 'code': error.code}});
+					defer.resolve({results:{error: error.message, code: error.code}});
 				}
 			});
 			return defer.promise;
@@ -232,25 +237,25 @@ angular
 			};
 			var defer = $q.defer();
 			Database.prototype.login(loginreturnData).then(function(returnData){
-	      if (!returnData.results.error) {
-					currentUser.set("password", data.newpassword);
-					currentUser.set("email", data.email);
-				if(currentUser)
-				{
-					currentUser.save(null, {
-						success: function(currentUser) {
-							defer.resolve({'results': currentUser});
-						},
-						error: function(currentUser, error) {
-							handleParseError(error.code);
-							defer.resolve({'results':{'error': error.message, 'code': error.code}});
-						}
-					});
+				if (!returnData.results.error) {
+						currentUser.set("password", data.newpassword);
+						currentUser.set("email", data.email);
+					if(currentUser)
+					{
+						currentUser.save(null, {
+							success: function(currentUser) {
+								defer.resolve({results: currentUser});
+							},
+							error: function(currentUser, error) {
+								handleParseError(error.code);
+								defer.resolve({results:{error: error.message, code: error.code}});
+							}
+						});
+					}
+				} else{
+					defer.resolve({results:{error: returnData.results.error, code: returnData.results.code}});
 				}
-        } else{
-            defer.resolve({'results':{'error': returnData.results.error, 'code': returnData.results.code}});
-        }
-      });
+      		});
 			return defer.promise;
 		};
 
@@ -264,12 +269,12 @@ angular
 				success: function(data) {
 					var results = new Database();
 					results.setPointerMapping(pointerMapping);
-					defer.resolve({'results': results.decodeData(results.stripObject(data))});
+					defer.resolve({results: results.decodeData(results.stripObject(data))});
 					$rootScope.$apply();
 				},
 				error: function(error) {
 					handleParseError(error.code);
-					defer.resolve({'results':{'error': error.message, 'code': error.code}});
+					defer.resolve({results:{error: error.message, code: error.code}});
 					$rootScope.$apply();
 				}
 			});
@@ -293,12 +298,12 @@ angular
 				success: function(data) {
 					var results = new Database();
 					results.setPointerMapping(pointerMapping);
-					defer.resolve({'results': results.decodeData(results.stripArray(data))});
+					defer.resolve({results: results.decodeData(results.stripArray(data))});
 					$rootScope.$apply();
 				},
 				error: function(error) {
 					handleParseError(error.code);
-					defer.resolve({'results':{'error': error.message, 'code': error.code}});
+					defer.resolve({results:{error: error.message, code: error.code}});
 					$rootScope.$apply();
 				}
 			});
@@ -323,23 +328,23 @@ angular
 				    	var results = new Database();
 						results.setPointerMapping(pointerMapping);
 				    	if (result._resolved) {
-					    	defer.resolve({'results': results.decodeData(results.stripArray(result._result))});
+					    	defer.resolve({results: results.decodeData(results.stripArray(result._result))});
 					    	$rootScope.$apply();
 					    } else
 					    {
-					    	defer.resolve({'results':{'error': "Failed to update"}});
+					    	defer.resolve({results:{error: "Failed to update"}});
 					    	$rootScope.$apply();
 					    }
 				    });
 			  	} else {
-			  		defer.resolve({'results':{'error': "This object does not exist", 'code': 404}});
+			  		defer.resolve({results:{error: "This object does not exist", code: 404}});
 			  		$rootScope.$apply();
 			  	}
 			  	
 			  },
 			  error: function(error) {
 			  	handleParseError(error.code);
-			    defer.resolve({'results':{'error': error.message, 'code': error.code}});
+			    defer.resolve({results:{error: error.message, code: error.code}});
 			  	$rootScope.$apply();
 			  }
 			});
@@ -356,22 +361,22 @@ angular
 			  	if (object) {
 				  	object.destroy({
 						  success: function(data) {
-						  	defer.resolve({'results':{'error': "Object " + data.id + " has been deleted", 'code': 200}});
+						  	defer.resolve({results:{error: "Object " + data.id + " has been deleted", code: 200}});
 						  	$rootScope.$apply();
 						  },
 						  error: function(data, error) {
 						  	handleParseError(error.code);
-						    defer.resolve({'results':{'error': error.message, 'code': error.code}});
+						    defer.resolve({results:{error: error.message, code: error.code}});
 						  	$rootScope.$apply();
 						  }
 						});
 					} else {
-						defer.resolve({'results':{'error': "Object does not exist", 'code': 404}});
+						defer.resolve({results:{error: "Object does not exist", code: 404}});
 						$rootScope.$apply();
 					}	
 			  },
 			  error: function(error) {
-			    defer.resolve({'results':{'error': error.message, 'code': error.code}});
+			    defer.resolve({results:{error: error.message, code: error.code}});
 			  	$rootScope.$apply();
 			  }
 			});
