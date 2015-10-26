@@ -18,13 +18,13 @@ angular
 			pointerMapping = {createdBy: '_User', onShelf: 'Shelves'};
 			Parse.initialize("aNcLKlFlOSSlgFHdyelHlMLzgVxUB5MutK2Dsn4K", "zwCxqHYtqjjoubvqpoVhqkN5kczWcPUKwVI3vmMk");
 			// var defer = $q.defer();
-			// this.setKeys().then(function(data){
+			// Database.prototype.setKeys().then(function(data){
 			// 	if (data.error !== undefined) {
 			// 		console.error(data.error.message);
 			// 	};
 			// 	
 			// })
-			// this.modelDatabase().then(function(data){
+			// Database.prototype.modelDatabase().then(function(data){
 			// 	if (data.error !== undefined) {
 			// 		console.error(data.error.message);
 			// 	};
@@ -37,7 +37,7 @@ angular
 		// Modeling database and validate field
 		Database.prototype.modelDatabase = function() {
 			var defer = $q.defer();
-			this.readDatabaseStruct().then(function(data){
+			Database.prototype.readDatabaseStruct().then(function(data){
 				var tables = data[1];
 				for (var table in tables) {
 					for (var column in tables[table]) {
@@ -89,9 +89,9 @@ angular
 		// set Parse keys
 		Database.prototype.setKeys = function(applicationId, javascriptKey){
 			var defer = $q.defer();
-			this.readParseKeys().then(function(data){
+			Database.prototype.readParseKeys().then(function(data){
 				if (data['applicationId'] === undefined || data['javascriptKey'] === undefined) {
-					defer.resolve({error:{message: 'One or both keys for Parse are missing'}});
+					defer.resolve({error:{message: 'One or both keys for Parse are missing', code: 422}});
 				} else {
 					Parse.initialize(data.applicationId, data.javascriptKey);
 					defer.resolve({results:{message: 'Successfully initialized', code: 202}});
@@ -199,7 +199,7 @@ angular
 			  success: function(data) {
 			    var results = new Database();
 					results.setPointerMapping(pointerMapping);
-					defer.resolve({results: results.decodeData(results.stripObject(data))});
+					defer.resolve({results: results.decodeData(results.stripObject(data)), code: 200});
 			  },
 			  error: function(data, error) {
 			  	handleParseError(error.code);
@@ -215,7 +215,7 @@ angular
 				success: function(data) {
 					var results = new Database();
 					results.setPointerMapping(pointerMapping);
-					defer.resolve({results: results.decodeData(results.stripObject(data))});
+					defer.resolve({results: results.decodeData(results.stripObject(data)), code: 200});
 				},
 				error: function(data, error) {
 					handleParseError(error.code);
@@ -244,7 +244,7 @@ angular
 					{
 						currentUser.save(null, {
 							success: function(currentUser) {
-								defer.resolve({results: currentUser});
+								defer.resolve({results: currentUser, code: 200});
 							},
 							error: function(currentUser, error) {
 								handleParseError(error.code);
@@ -269,7 +269,7 @@ angular
 				success: function(data) {
 					var results = new Database();
 					results.setPointerMapping(pointerMapping);
-					defer.resolve({results: results.decodeData(results.stripObject(data))});
+					defer.resolve({results: results.decodeData(results.stripObject(data)), code: 200});
 					$rootScope.$apply();
 				},
 				error: function(error) {
@@ -298,7 +298,7 @@ angular
 				success: function(data) {
 					var results = new Database();
 					results.setPointerMapping(pointerMapping);
-					defer.resolve({results: results.decodeData(results.stripArray(data))});
+					defer.resolve({results: results.decodeData(results.stripArray(data)), code: 200});
 					$rootScope.$apply();
 				},
 				error: function(error) {
@@ -328,16 +328,16 @@ angular
 				    	var results = new Database();
 						results.setPointerMapping(pointerMapping);
 				    	if (result._resolved) {
-					    	defer.resolve({results: results.decodeData(results.stripArray(result._result))});
+					    	defer.resolve({results: results.decodeData(results.stripArray(result._result)), code: 200});
 					    	$rootScope.$apply();
 					    } else
 					    {
-					    	defer.resolve({results:{error: "Failed to update"}});
+					    	defer.resolve({results:{error: "Failed to update", code: 400}});
 					    	$rootScope.$apply();
 					    }
 				    });
 			  	} else {
-			  		defer.resolve({results:{error: "This object does not exist", code: 404}});
+			  		defer.resolve({results:{error: "Database.prototype object does not exist", code: 404}});
 			  		$rootScope.$apply();
 			  	}
 			  	
@@ -393,7 +393,7 @@ angular
 
 		// function checkFlag(param) {
 		//     if($rootScope.is_initialized == false) {
-		//         window.setTimeout(checkFlag, 1); /* this checks the flag every 100 milliseconds*/
+		//         window.setTimeout(checkFlag, 1); /* Database.prototype checks the flag every 100 milliseconds*/
 		//     } else {
 		//     	console.log("hello")
 		//     }
@@ -403,7 +403,7 @@ angular
 		// Database.prototype.request = function(method, table_name, data, objectId)
 		// {
 		// 	if ($rootScope.is_initialized == false) {
-		// 		this.init
+		// 		Database.prototype.init
 		// 	};
 		// }
 	});

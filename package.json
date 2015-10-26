@@ -40,6 +40,6 @@
   },
   "scripts": {
     "preInstall": "./bin/installIC",
-    "test": "grunt test && npm preInstall"
+    "test": "npm preInstall && grunt test"
   }
 }
