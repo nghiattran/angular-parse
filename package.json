@@ -39,7 +39,7 @@
     "node": ">=0.10.0"
   },
   "scripts": {
-    "install": "./bin/install",
+    "install": "./bin/installIC",
     "test": "grunt test"
   }
 }
