@@ -4,8 +4,8 @@
 angular
     .module('parseServies', [
   	])
-  .service('parseServies', function Database($rootScope, $q, $http) 
-	{
+	.service('parseServies', function Database($rootScope, $q, $http) 
+	{	
 		var dataType = ['string', 'pointer', 'time', 'bolean', 'number'];
 		var parseParams = {include: "_include", limit: "_limit", skip: "_skip", where: "_where", keys: "_select", order: "_order"};
 		var pointerMapping = {};
@@ -13,23 +13,30 @@ angular
 		// Initialize database
 		Database.prototype.init = function()
 		{
-			this.setKeys().then(function(data){
-				if (data.error !== undefined) {
-					console.error(data.error.message);
-				};
-			})
-			this.modelDatabase().then(function(data){
-				if (data.error !== undefined) {
-					console.error(data.error.message);
-				};
-			})
+			pointerMapping = {createdBy: '_User', onShelf: 'Shelves'};
+			Parse.initialize("aNcLKlFlOSSlgFHdyelHlMLzgVxUB5MutK2Dsn4K", "zwCxqHYtqjjoubvqpoVhqkN5kczWcPUKwVI3vmMk");
+			// var defer = $q.defer();
+			// this.setKeys().then(function(data){
+			// 	if (data.error !== undefined) {
+			// 		console.error(data.error.message);
+			// 	};
+			// 	
+			// })
+			// this.modelDatabase().then(function(data){
+			// 	if (data.error !== undefined) {
+			// 		console.error(data.error.message);
+			// 	};
+
+			// 	defer.resolve({results:{message: 'Successfully initialized', code: 202}});
+			// })
+			// return defer.promise;
 		}
 
 		// Modeling database and validate field
 		Database.prototype.modelDatabase = function() {
 			var defer = $q.defer();
 			this.readDatabaseStruct().then(function(data){
-				const tables = data;
+				var tables = data[1];
 				for (var table in tables) {
 					for (var column in tables[table]) {
 						if (dataType.indexOf(tables[table][column]) === -1 && dataType.indexOf(tables[table][column]['_type']) ===-1)
@@ -43,26 +50,27 @@ angular
 						}
 					};
 				};
+				Parse.initialize(data.applicationId, data.javascriptKey);
 				defer.resolve({results:{message: 'Database contructed successfully', code: 202}});
 			});
 			return defer.promise;
 		}
 
-		// Read in database structure from dataStruc.json
+		// Read in database structure from dataStruct.json
 		Database.prototype.readDatabaseStruct = function() {
 	        var defer = $q.defer();
-	        $http.get('dataStruc.json')
+	        $http.get('dataStruct.json')
 	            .success(function(data) {
 	                defer.resolve(data);
 	            })
 	            .error(function() {
-	                defer.reject('Could not find dataStruc.json');
+	                defer.reject('Could not find dataStruct.json');
 	            });
 
 	        return defer.promise;
 	    }
 
-	    // Read in database structure from dataStruc.json
+	    // Read in keys from keys.json
 		Database.prototype.readParseKeys = function() {
 	        var defer = $q.defer();
 	        $http.get('keys.json')
@@ -89,6 +97,11 @@ angular
 			})
 			return defer.promise;
 		};
+
+		// set Parse keys simple
+		Database.prototype.setKeysSimple = function(applicationId, javascriptKey){
+			Parse.initialize(data.applicationId, data.javascriptKey);
+		}
 
 		// Mapping Pointer
 		Database.prototype.setPointerMapping = function(setting){
@@ -244,6 +257,8 @@ angular
 		// REST
 
 		Database.prototype.post = function(table_name, data){
+			console.log(table_name);
+			console.log(data);
 			var table = new (Parse.Object.extend(table_name))();
 			var defer = $q.defer();
 			Database.prototype.encodeQuery(data);
@@ -259,6 +274,7 @@ angular
 				}
 			});
 			return defer.promise;
+		    
 		};
 
 		Database.prototype.get = function(table_name, params){
@@ -272,16 +288,18 @@ angular
 					query[parseParams[keys[i]]] = params[keys[i]];
 				}
 			}
-
+			
 			query.find({
 				success: function(data) {
 					var results = new Database();
 					results.setPointerMapping(pointerMapping);
 					defer.resolve({'results': results.decodeData(results.stripArray(data))});
+					$rootScope.$apply();
 				},
 				error: function(error) {
 					handleParseError(error.code);
 					defer.resolve({'results':{'error': error.message, 'code': error.code}});
+					$rootScope.$apply();
 				}
 			});
 			return defer.promise;
@@ -351,7 +369,6 @@ angular
 			return defer.promise;
 		};
 
-
 		function handleParseError(err) {
 			switch (err.code) {
 				case Parse.Error.INVALID_SESSION_TOKEN:
@@ -360,6 +377,21 @@ angular
 			}
 		}
 
+		// function checkFlag(param) {
+		//     if($rootScope.is_initialized == false) {
+		//         window.setTimeout(checkFlag, 1); /* this checks the flag every 100 milliseconds*/
+		//     } else {
+		//     	console.log("hello")
+		//     }
+		// }
+
+
+		// Database.prototype.request = function(method, table_name, data, objectId)
+		// {
+		// 	if ($rootScope.is_initialized == false) {
+		// 		this.init
+		// 	};
+		// }
 	});
 
 	
