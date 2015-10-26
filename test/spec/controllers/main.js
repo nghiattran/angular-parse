@@ -16,12 +16,14 @@ describe('Controller: MainCtrl', function () {
     });
   }));
 
+  var table_name = "Shelves";
+  var created_by = "PNteddARfT";
   describe('test get', function () {
 
     it('test get all', function (done) {
       scope.init();
-
-      scope.test_get_all().then(function (response) {
+      var params = {where: {}};
+      scope.test_get(table_name, params).then(function (response) {
         expect(response.results).toBeDefined();
         expect(response.results.length).toBeGreaterThan(0);
         done();
@@ -30,43 +32,136 @@ describe('Controller: MainCtrl', function () {
 
     it('test get an object with objectId', function (done) {
       scope.init();
-
-      scope.test_get_an_object_with_objectId().then(function (response) {
+      var params = {where: {
+        objectId: "BXcIz3z3Ta"
+      }};
+      scope.test_get(table_name, params).then(function (response) {
         expect(response.results).toBeDefined();
         expect(response.results.length).toBe(1);
         done();
       });
     });
 
-    it('test_get_an_object_with_one_condition', function (done) {
+    it('test_get_with_limit', function (done) {
       scope.init();
+      var params = {
+        limit : 10,
+        where: {}
+      };
+      scope.test_get(table_name, params).then(function (response) {
+        expect(response.results).toBeDefined();
+        expect(response.results.length).toBe(params.limit);
+        done();
+      });
+    });
 
-      scope.test_get_an_object_with_one_condition().then(function (response) {
+    it('test_get_with_one_condition', function (done) {
+      scope.init();
+      var params = {where: {
+        name: "test"
+      }};
+      scope.test_get(table_name, params).then(function (response) {
         expect(response.results).toBeDefined();
         expect(response.results.length).toBeGreaterThan(0);
         done();
       });
     });
 
-    it('test_get_an_object_with_two_condition', function (done) {
+    it('test_get_with_two_conditions', function (done) {
       scope.init();
-
-      scope.test_get_an_object_with_two_condition().then(function (response) {
+      var params = {where: {
+        name: "test",
+        createdBy: created_by
+      }};
+      scope.test_get(table_name, params).then(function (response) {
         expect(response.results).toBeDefined();
         expect(response.results.length).toBeGreaterThan(0);
         done();
       });
     });
 
-    it('test_get_an_object_with_pointer_condition', function (done) {
+    it('test_get_with_pointer_condition', function (done) {
       scope.init();
-
-      scope.test_get_an_object_with_pointer_condition().then(function (response) {
+      var params = {where: {
+        createdBy: created_by
+      }};
+      scope.test_get(table_name, params).then(function (response) {
         expect(response.results).toBeDefined();
         expect(response.results.length).toBeGreaterThan(0);
         done();
       });
     });
+
+    it('test get with nonexist condition', function (done) {
+      scope.init();
+      var params = {where: {
+        createdBys: created_by
+      }};
+      scope.test_get(table_name, params).then(function (response) {
+        expect(response.results).toBeDefined();
+        expect(response.results.length).toBe(0);
+        done();
+      });
+    });
+  });
+
+  describe('test post', function () {
+
+    it('test post', function (done) {
+      scope.init();
+      var payload = {
+        name: "test funtion"
+      }
+
+      scope.test_post(table_name, payload).then(function (response) {
+        expect(response.results).toBeDefined();
+        expect(response.results.name).toBe(payload.name);
+        done();
+      });
+    });
+
+    it('test post', function (done) {
+      scope.init();
+      var payload = {
+        name: "test funtion"
+      }
+
+      scope.test_post(table_name, payload).then(function (response) {
+        expect(response.results).toBeDefined();
+        expect(response.results.name).toBe(payload.name);
+        done();
+      });
+    });
+
+    it('test post with pointer', function (done) {
+      scope.init();
+      var payload = {
+        name: "test funtion",
+        createdBy: created_by
+      }
+
+      scope.test_post(table_name, payload).then(function (response) {
+        expect(response.results).toBeDefined();
+        expect(response.results.name).toBe(payload.name);
+        done();
+      });
+    });
+
+    it('test post nonexist column', function (done) {
+      scope.init();
+      var payload = {
+        name: "test funtion",
+        s_name: "test funtion"
+      }
+
+      scope.test_post(table_name, payload).then(function (response) {
+        expect(response.results).toBeDefined();
+        expect(response.results.name).toBe(payload.name);
+        done();
+      });
+    });
+
+
 
   });
 });

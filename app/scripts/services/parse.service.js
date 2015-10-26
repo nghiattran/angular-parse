@@ -257,8 +257,6 @@ angular
 		// REST
 
 		Database.prototype.post = function(table_name, data){
-			console.log(table_name);
-			console.log(data);
 			var table = new (Parse.Object.extend(table_name))();
 			var defer = $q.defer();
 			Database.prototype.encodeQuery(data);
@@ -267,10 +265,12 @@ angular
 					var results = new Database();
 					results.setPointerMapping(pointerMapping);
 					defer.resolve({'results': results.decodeData(results.stripObject(data))});
+					$rootScope.$apply();
 				},
 				error: function(error) {
 					handleParseError(error.code);
 					defer.resolve({'results':{'error': error.message, 'code': error.code}});
+					$rootScope.$apply();
 				}
 			});
 			return defer.promise;
@@ -288,7 +288,7 @@ angular
 					query[parseParams[keys[i]]] = params[keys[i]];
 				}
 			}
-			
+
 			query.find({
 				success: function(data) {
 					var results = new Database();
@@ -323,19 +323,23 @@ angular
 							results.setPointerMapping(pointerMapping);
 				    	if (result._resolved) {
 					    	defer.resolve({'results': results.decodeData(results.stripArray(result._result))});
+					    	$rootScope.$apply();
 					    } else
 					    {
 					    	defer.resolve({'results':{'error': "Failed to update"}});
+					    	$rootScope.$apply();
 					    }
 				    });
 			  	} else {
 			  		defer.resolve({'results':{'error': "This object does not exist", 'code': 404}});
+			  		$rootScope.$apply();
 			  	}
 			  	
 			  },
 			  error: function(error) {
 			  	handleParseError(error.code);
 			    defer.resolve({'results':{'error': error.message, 'code': error.code}});
+			  	$rootScope.$apply();
 			  }
 			});
 			return defer.promise;
@@ -352,18 +356,22 @@ angular
 				  	object.destroy({
 						  success: function(data) {
 					    	defer.resolve({'results': "Object " + data.id + " has been deleted"});
+						  	$rootScope.$apply();
 						  },
 						  error: function(data, error) {
 						  	handleParseError(error.code);
 						    defer.resolve({'results':{'error': error.message, 'code': error.code}});
+						  	$rootScope.$apply();
 						  }
 						});
 					} else {
 						defer.resolve({'results':{'error': "Object does not exist", 'code': 404}});
+						$rootScope.$apply();
 					}	
 			  },
 			  error: function(error) {
 			    defer.resolve({'results':{'error': error.message, 'code': error.code}});
+			  	$rootScope.$apply();
 			  }
 			});
 			return defer.promise;

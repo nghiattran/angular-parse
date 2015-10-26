@@ -115,78 +115,20 @@ angular.module('angularParseApp')
 
   // parseServies.modelDatabase()
 
-  $scope.test_get_all =  function()
+  $scope.test_get =  function(table_name, params)
   {
     var defer = $q.defer();
-    var where = {};
-    parseServies.get("Shelves", where).then(function(data)
+    parseServies.get(table_name, params).then(function(data)
     {
-      $scope.data = data.results;
       defer.resolve(data);
     })
     return defer.promise;
   }
 
-  $scope.test_get_an_object_with_objectId =  function()
+  $scope.test_post =  function(table_name, payload)
   {
     var defer = $q.defer();
-    var params = {
-      where : {
-        objectId: "BXcIz3z3Ta"
-      }
-    };
-    parseServies.get("Shelves", params).then(function(data)
-    {
-      $scope.data = data.results;
-      defer.resolve(data);
-    })
-    return defer.promise;
-  }
-
-  $scope.test_get_an_object_with_one_condition =  function()
-  {
-    var defer = $q.defer();
-    var params = {
-      where : {
-        name: "test"
-      }
-    };
-    parseServies.get("Shelves", params).then(function(data)
-    {
-      $scope.data = data.results;
-      defer.resolve(data);
-    })
-    return defer.promise;
-  }
-
-  $scope.test_get_an_object_with_two_condition =  function()
-  {
-    var defer = $q.defer();
-    var params = {
-      where : {
-        name: "test",
-        createdBy: "PNteddARfT"
-      }
-    };
-    parseServies.get("Shelves", params).then(function(data)
-    {
-      $scope.data = data.results;
-      defer.resolve(data);
-    })
-    return defer.promise;
-  }
-
-  $scope.test_get_an_object_with_pointer_condition =  function()
-  {
-    var defer = $q.defer();
-    var params = {
-      where : {
-        createdBy: "PNteddARfT"
-      }
-    };
-    parseServies.get("Shelves", params).then(function(data)
-    {
-      $scope.data = data.results;
+    parseServies.post(table_name,payload).then(function(data){
       defer.resolve(data);
     })
     return defer.promise;
