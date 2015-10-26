@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
+echo "Installing grunt"
+npm install -g grunt
+
 echo "Installing bower"
-npm install bower
+npm install -g bower
 
 echo "Installing bower dependencies"
 bower install
