@@ -309,18 +309,19 @@ angular
 		{
 			var defer = $q.defer();
 			var query = new Parse.Query(Parse.Object.extend(table_name));
+			Database.prototype.encodeQuery(data);
 			query.equalTo("objectId", objectId);
 			query.first({
 			  success: function(object) {
 			  	var keys = Object.keys(data);
 			  	if (object) {
 			  		for (var i = 0; i < keys.length; i++) {
-			  		object.set(keys[i], data[keys[i]]);
+			  			object.set(keys[i], data[keys[i]]);
 				  	}
 				    var result = object.save();
 				    result.then(function(){
 				    	var results = new Database();
-							results.setPointerMapping(pointerMapping);
+						results.setPointerMapping(pointerMapping);
 				    	if (result._resolved) {
 					    	defer.resolve({'results': results.decodeData(results.stripArray(result._result))});
 					    	$rootScope.$apply();
@@ -355,7 +356,7 @@ angular
 			  	if (object) {
 				  	object.destroy({
 						  success: function(data) {
-					    	defer.resolve({'results': "Object " + data.id + " has been deleted"});
+						  	defer.resolve({'results':{'error': "Object " + data.id + " has been deleted", 'code': 200}});
 						  	$rootScope.$apply();
 						  },
 						  error: function(data, error) {

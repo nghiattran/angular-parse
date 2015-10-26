@@ -134,12 +134,36 @@ angular.module('angularParseApp')
     return defer.promise;
   }
 
+  $scope.test_put =  function(table_name, objectId, payload)
+  {
+    var defer = $q.defer();
+    parseServies.put(table_name, objectId,payload).then(function(data){
+      defer.resolve(data);
+    })
+    return defer.promise;
+  }
+
+  $scope.test_delete =  function(table_name, objectId, payload)
+  {
+    var defer = $q.defer();
+    parseServies.delete(table_name, objectId).then(function(data){
+      defer.resolve(data);
+    })
+    return defer.promise;
+  }
+
   $scope.init = function()
   {
     parseServies.init();
   }
-
+  var payload = {
+    name: "test put with pointer",
+    createdBy: "XbJTghT834"
+  }
   // $scope.init();
-  // $scope.test_get_an_object_with_two_condition();
+  // $scope.test_delete("Shelves", "npMx7WWfsV");
+  // $scope.test_put("Shelves", "eswtUkIRpx", payload);
+  // delete payload.createdBy;
+  // $scope.test_put("Shelves", "eswtUkIRpx", payload);
 });
 
