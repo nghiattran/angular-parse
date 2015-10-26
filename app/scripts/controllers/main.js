@@ -8,10 +8,10 @@
  * Controller of the angularParseApp
  */
 angular.module('angularParseApp')
-  .controller('MainCtrl', function (parseServies, $scope) {
-    parseServies.init();
+  .controller('MainCtrl', function (parseServies, $scope, $q, $rootScope, $timeout) {
+    // parseServies.init();
   // parseServies.setKeys("aNcLKlFlOSSlgFHdyelHlMLzgVxUB5MutK2Dsn4K", "zwCxqHYtqjjoubvqpoVhqkN5kczWcPUKwVI3vmMk");
-  // parseServies.setPointerMapping({createdBy: '_User', onShelf: 'Shelves'});
+  parseServies.setPointerMapping({createdBy: '_User', onShelf: 'Shelves'});
   
   // var where = {createdBy: 'RYpc5azQhS'};
   // var params = { 
@@ -89,18 +89,18 @@ angular.module('angularParseApp')
 
   $scope.post = function(data)
   {
-    // var payload = {
-    //   file: data.file || null,
-    //   name: data.name,
-    // }
-    // parseServies.post('File',payload).then(function(data){
-    //   if (!data.results.error) {
-    //     console.log(data.results);
-    //   } else{
-    //     console.log(data.results.error);
-    //     $scope.login_error = 'Your username or password is incorrect';
-    //   }
-    // })
+    var payload = {
+      file: data.file || null,
+      name: data.name,
+    }
+    parseServies.post('File',payload).then(function(data){
+      if (!data.results.error) {
+        console.log(data.results);
+      } else{
+        console.log(data.results.error);
+        $scope.login_error = 'Your username or password is incorrect';
+      }
+    })
   }
 
   // parseServies.modelDatabase().then(function(data){
@@ -114,5 +114,32 @@ angular.module('angularParseApp')
   // })
 
   // parseServies.modelDatabase()
+
+  $scope.test_get =  function(table_name, params)
+  {
+    var defer = $q.defer();
+    parseServies.get(table_name, params).then(function(data)
+    {
+      defer.resolve(data);
+    })
+    return defer.promise;
+  }
+
+  $scope.test_post =  function(table_name, payload)
+  {
+    var defer = $q.defer();
+    parseServies.post(table_name,payload).then(function(data){
+      defer.resolve(data);
+    })
+    return defer.promise;
+  }
+
+  $scope.init = function()
+  {
+    parseServies.init();
+  }
+
+  // $scope.init();
+  // $scope.test_get_an_object_with_two_condition();
 });
 
