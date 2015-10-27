@@ -11,7 +11,7 @@ angular.module('angularParseApp')
   .controller('MainCtrl', function (parseServies, $scope, $q, $rootScope, $timeout) {
     // parseServies.init();
   // parseServies.setKeys("aNcLKlFlOSSlgFHdyelHlMLzgVxUB5MutK2Dsn4K", "zwCxqHYtqjjoubvqpoVhqkN5kczWcPUKwVI3vmMk");
-  parseServies.setPointerMapping({createdBy: '_User', onShelf: 'Shelves'});
+  // parseServies.setPointerMappingSimple({createdBy: '_User', onShelf: 'Shelves'});
   
   // var where = {createdBy: 'RYpc5azQhS'};
   // var params = { 
@@ -152,15 +152,44 @@ angular.module('angularParseApp')
     return defer.promise;
   }
 
+  $scope.test_signup =  function(credentials)
+  {
+    var defer = $q.defer();
+    parseServies.signup(credentials).then(function(data){
+      defer.resolve(data);
+    })
+    return defer.promise;
+  }
+
+  $scope.test_login =  function(credentials)
+  {
+    var defer = $q.defer();
+    parseServies.login(credentials).then(function(data){
+      defer.resolve(data);
+    })
+    return defer.promise;
+  }
+
+  // $scope.test_signup(username1 , 2);
+
   $scope.init = function()
   {
     parseServies.init();
   }
-  var payload = {
-    name: "test put with pointer",
-    createdBy: "XbJTghT834"
+
+  var params = {where: {
+    name: "test function",
+    createdBy: "PNteddARfT"
+  }};
+
+  var credentials = {
+    username: "one",
+    password: "haibabon"
   }
   // $scope.init();
+  // $scope.test_login(credentials);
+  // $scope.test_signup(credentials);
+  // $scope.test_get("Shelves", params);
   // $scope.test_delete("Shelves", "npMx7WWfsV");
   // $scope.test_put("Shelves", "eswtUkIRpx", payload);
   // delete payload.createdBy;
