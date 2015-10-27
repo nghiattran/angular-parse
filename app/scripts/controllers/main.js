@@ -186,6 +186,7 @@ angular.module('angularParseApp')
     username: "one",
     password: "haibabon"
   }
+  
   // $scope.init();
   // $scope.test_login(credentials);
   // $scope.test_signup(credentials);
