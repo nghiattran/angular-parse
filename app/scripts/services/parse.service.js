@@ -141,10 +141,10 @@ angular
 			{
 				if (pointerMapping[keys[i]]) {
 					query[keys[i]] = {
-					  __type: "Pointer",
-		        className: pointerMapping[keys[i]],
-		        objectId: query[keys[i]]
-			    };
+						  __type: "Pointer",
+				        className: pointerMapping[keys[i]],
+				        objectId: query[keys[i]]
+				    };
 				}
 
 				if (typeof(query[keys[i]]) === 'object') {
