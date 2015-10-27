@@ -9,14 +9,37 @@ angular
 		var dataType = ['string', 'pointer', 'time', 'bolean', 'number'];
 		var parseParams = {include: "_include", limit: "_limit", skip: "_skip", where: "_where", keys: "_select", order: "_order"};
 		var pointerMapping = {};
-
 		// TODO reading all credentials from external files and make all functions wait
 		// untill it finishes reading
 		// Initialize database
 		Database.prototype.init = function()
 		{
-			pointerMapping = {createdBy: '_User', onShelf: 'Shelves'};
 			Parse.initialize("aNcLKlFlOSSlgFHdyelHlMLzgVxUB5MutK2Dsn4K", "zwCxqHYtqjjoubvqpoVhqkN5kczWcPUKwVI3vmMk");
+			var data = {
+			    "_User": {
+			        "objectId": "string",
+			        "username": "string",
+			        "password": "string",
+			        "email": "string",
+			        "createdAt": "time",
+			        "updatedAt": "time",
+			        "emailVerified": "bolean"
+			      },
+
+			    "Shelves": {
+			        "objectId": "string",
+			        "name": "string",
+			        "description": "string",
+			        "order": "number",
+			        "createdAt": "time",
+			        "updatedAt": "time",
+			        "createdBy": {
+			          "_type": "pointer",
+			          "to": "_User"
+			        }
+			    }
+			}; 
+			Database.prototype.setPointerMapping(data);
 			// var defer = $q.defer();
 			// Database.prototype.setKeys().then(function(data){
 			// 	if (data.error !== undefined) {
@@ -34,24 +57,25 @@ angular
 			// return defer.promise;
 		}
 
+		Database.prototype.setPointerMapping = function(tables) {
+			for (var table in tables) {
+				for (var column in tables[table]) {
+					if (dataType.indexOf(tables[table][column]) === -1 && dataType.indexOf(tables[table][column]['_type']) ===-1)
+					{
+						return {error:{message: 'Invalid data type'}};
+					} else if (tables[table][column]['_type'] == 'pointer')
+					{
+						pointerMapping[column] = tables[table][column]['to'];
+					}
+				};
+			};
+		}
+
 		// Modeling database and validate field
 		Database.prototype.modelDatabase = function() {
 			var defer = $q.defer();
 			Database.prototype.readDatabaseStruct().then(function(data){
-				var tables = data[1];
-				for (var table in tables) {
-					for (var column in tables[table]) {
-						if (dataType.indexOf(tables[table][column]) === -1 && dataType.indexOf(tables[table][column]['_type']) ===-1)
-						{
-							defer.resolve({error:{message: 'Invalid data type'}});
-							return defer.promise;
-						} else if (tables[table][column]['_type'] == 'pointer')
-						{
-							// Set mapping pointer
-							pointerMapping[column] = tables[table][column]['to'];
-						}
-					};
-				};
+				Database.prototype.setPointerMapping(data[1])
 				Parse.initialize(data.applicationId, data.javascriptKey);
 				defer.resolve({results:{message: 'Database contructed successfully', code: 202}});
 			});
@@ -106,7 +130,7 @@ angular
 		}
 
 		// Mapping Pointer
-		Database.prototype.setPointerMapping = function(setting){
+		Database.prototype.setPointerMappingSimple = function(setting){
 			pointerMapping = setting;
 		};
 
@@ -187,24 +211,22 @@ angular
 		// Users
 		Database.prototype.signup = function(data){
 			var defer = $q.defer();
-			if (!data.username || !data.password) {
-				defer.resolve({results:{error: 'Missing username or password', code: error.code}});
-				return defer.promise;
-			}
 			var user = new Parse.User();
 			user.set("username", data.username);
 			user.set("password", data.password);
 			user.set("email", data.email);
 			user.signUp(null, {
-			  success: function(data) {
-			    var results = new Database();
+				success: function(data) {
+				var results = new Database();
 					results.setPointerMapping(pointerMapping);
 					defer.resolve({results: results.decodeData(results.stripObject(data)), code: 200});
-			  },
-			  error: function(data, error) {
-			  	handleParseError(error.code);
-			    defer.resolve({results:{error: error.message, code: error.code}});
-			  }
+					$rootScope.$apply();
+				},
+				error: function(data, error) {
+					handleParseError(error.code);
+					defer.resolve({results:{error: error.message, code: error.code}});
+					$rootScope.$apply();
+				}
 			});
 			return defer.promise;
 		};
@@ -216,10 +238,12 @@ angular
 					var results = new Database();
 					results.setPointerMapping(pointerMapping);
 					defer.resolve({results: results.decodeData(results.stripObject(data)), code: 200});
+					$rootScope.$apply();
 				},
 				error: function(data, error) {
 					handleParseError(error.code);
 					defer.resolve({results:{error: error.message, code: error.code}});
+					$rootScope.$apply();
 				}
 			});
 			return defer.promise;
@@ -245,15 +269,18 @@ angular
 						currentUser.save(null, {
 							success: function(currentUser) {
 								defer.resolve({results: currentUser, code: 200});
+								$rootScope.$apply();
 							},
 							error: function(currentUser, error) {
 								handleParseError(error.code);
 								defer.resolve({results:{error: error.message, code: error.code}});
+								$rootScope.$apply();
 							}
 						});
 					}
 				} else{
 					defer.resolve({results:{error: returnData.results.error, code: returnData.results.code}});
+					$rootScope.$apply();
 				}
       		});
 			return defer.promise;
@@ -361,7 +388,7 @@ angular
 			  	if (object) {
 				  	object.destroy({
 						  success: function(data) {
-						  	defer.resolve({results:{error: "Object " + data.id + " has been deleted", code: 200}});
+						  	defer.resolve({results:{error: "Object " + data.id + " has been deleted"}, code: 200});
 						  	$rootScope.$apply();
 						  },
 						  error: function(data, error) {
