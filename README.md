@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/nghiattran/angular-parse.svg?branch=travis)](https://travis-ci.org/nghiattran/angular-parse)
+[![Coverage Status](https://coveralls.io/repos/nghiattran/angular-parse/badge.svg?branch=master&service=github)](https://coveralls.io/github/nghiattran/angular-parse?branch=master)
 
 # Work on progress
 
