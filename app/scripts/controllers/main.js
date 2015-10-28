@@ -201,6 +201,16 @@ angular.module('angularParseApp')
     return parseServies.getCurrentUser();
   }
 
+  $scope.test_file = function(file)
+  {
+    var defer = $q.defer();
+    parseServies.uploadFile(file).then(function(data) {
+      defer.resolve(data);
+
+    })
+    return defer.promise;
+  }
+
   $scope.logout =  function(credentials)
   {
     parseServies.logout();
@@ -230,19 +240,25 @@ angular.module('angularParseApp')
     username: "one",
     password: "haibabon"
   }
+
   
   $scope.test = function(redentials)
   {
     var fileUploadControl = redentials.files;
-    for (var i = 0; i < redentials.files.length; i++) {
-      var parseFile = new Parse.File(name, fileUploadControl);
-    };
-    
+    parseServies.uploadFile(fileUploadControl).then(function(data) {
+      var payload = {
+        file: data.results,
+        name: "test upload file"
+      }
+      parseServies.post("Shelves", payload).then(function(data) {
+        console.log(data);
+      })
+    })
   }
   
 
 
-  // $scope.init();
+  $scope.init();
   // $scope.test_login(credentials);
   // console.log(parseServies.getCurrentUser());
   // $scope.logout();

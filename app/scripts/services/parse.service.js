@@ -16,7 +16,7 @@ angular
 		{
 			Parse.initialize("aNcLKlFlOSSlgFHdyelHlMLzgVxUB5MutK2Dsn4K", "zwCxqHYtqjjoubvqpoVhqkN5kczWcPUKwVI3vmMk");
 			Parse.User.enableRevocableSession();
-			var data = {
+			var dataStruct = {
 			    "_User": {
 			        "objectId": "string",
 			        "username": "string",
@@ -37,10 +37,11 @@ angular
 			        "createdBy": {
 			          "_type": "pointer",
 			          "to": "_User"
-			        }
+			        },
+			        "file": "file"
 			    }
 			}; 
-			Database.prototype.setPointerMapping(data);
+			Database.prototype.setPointerMapping(dataStruct);
 			// var defer = $q.defer();
 			// Database.prototype.setKeys().then(function(data){
 			// 	if (data.error !== undefined) {
@@ -145,10 +146,11 @@ angular
 						  __type: "Pointer",
 				        className: pointerMapping[keys[i]],
 				        objectId: query[keys[i]]
-				    };
-				}
-
-				if (typeof(query[keys[i]]) === 'object') {
+				    }
+				} 
+				if (query[keys[i]]._source && query[keys[i]]._source.file) {
+					continue
+				} else if (typeof(query[keys[i]]) === 'object') {
 					Database.prototype.encodeQuery(query[keys[i]]);
 				}
 			}
@@ -165,9 +167,16 @@ angular
 			{
 				if (pointerMapping[keys[i]]) {
 					query[keys[i]] = query[keys[i]].objectId;
-				}
-				if (typeof(query[keys[i]]) === 'object') {
-					Database.prototype.decodeData(query[keys[i]]);
+				} else if (typeof(query[keys[i]]) === 'object') {
+					if ( query[keys[i]]._url)
+					{
+						query[keys[i]] = {
+							url : query[keys[i]]._url,
+							name : query[keys[i]]._name
+						}
+					} else {
+						Database.prototype.decodeData(query[keys[i]]);
+					}
 				}
 			}
 			return query;
@@ -329,9 +338,6 @@ angular
 					query[parseParams[keys[i]]] = params[keys[i]];
 				}
 			}
-			
-			// query.notEqualTo("name", "test function");
-			// console.log(query)
 			query.find({
 				success: function(data) {
 					var results = new Database();
@@ -419,6 +425,18 @@ angular
 			  }
 			});
 			return defer.promise;
+		};
+
+		Database.prototype.uploadFile = function(file){
+			var parseFile = new Parse.File(file[0].name, file[0]);
+			var defer = $q.defer();
+			parseFile.save().then(function() {
+				defer.resolve({results: parseFile, code: 200});
+		    }, function(error) {
+		    	defer.resolve({results:{error: error.reponseText, code: error.status}});
+		    });
+			return defer.promise;
+		    
 		};
 
 		function handleParseError(err) {
