@@ -27,6 +27,7 @@ describe('Controller: MainCtrl', function () {
 
     it('test get all user', function (done) {
       scope.init();
+      scope.logout();
       var params = {where: {}};
       scope.test_get("_User", params).then(function (response) {
         users = response.results;
@@ -62,7 +63,7 @@ describe('Controller: MainCtrl', function () {
       });
     });
 
-    it('test_get_with_limit', function (done) {
+    it('test get with limit', function (done) {
       scope.init();
       var params = {
         limit : 10,
@@ -75,6 +76,81 @@ describe('Controller: MainCtrl', function () {
         done();
       });
     });
+
+    it('test get with include', function (done) {
+      scope.init();
+      var params = {
+        where: {
+          objectId: "2DejK1qDZX"
+        },
+        include: ["onShelf"]
+      };
+      scope.test_get("Books", params).then(function (response) {
+        expect(response.results).toBeDefined();
+        expect(response.results[0].onShelf.createdBy).toBeDefined();
+        expect(response.code).toBe(200);
+        done();
+      });
+    });
+
+    it('test get with greater than field', function (done) {
+      scope.init();
+      var params = {
+        where: {
+          order: {"$gt": 3}
+        },
+        limit: 50,
+        include: ["onShelf"]
+      };
+      scope.test_get(table_name, params).then(function (response) {
+        expect(response.results).toBeDefined();
+        expect(response.results.length).toBeGreaterThan(0);
+        expect(response.code).toBe(200);
+        for (var i = 0; i < response.results.length; i++) {
+          expect(response.results[i].order).toBeGreaterThan(3);
+        };
+        done();
+      });
+    });
+
+    it('test get with not equal to field', function (done) {
+      scope.init();
+      var params = {
+        where: {
+          boolean: {"$ne": true}
+        },
+        include: ["onShelf"]
+      };
+      scope.test_get(table_name, params).then(function (response) {
+        expect(response.results).toBeDefined();
+        expect(response.results.length).toBeGreaterThan(0);
+        for (var i = 0; i < response.results.length; i++) {
+          expect(response.results[i].boolean).not.toBe(true);
+        };
+        expect(response.code).toBe(200);
+        done();
+      });
+    });
+
+    // TODO: investigate what's wrong with select
+    // it('test get with select', function (done) {
+    //   scope.init();
+    //   var params = {
+    //     where: {
+    //     },
+    //     select: ["name"]
+    //   };
+
+    //   scope.test_get(table_name, params).then(function (response) {
+    //     console.log(response.results[0].createdBy)
+    //     expect(response.results).toBeDefined();
+    //     // expect(response.results[0].createdBy).toBeDefined();
+    //     // expect(response.results[0].name).not.toBeDefined();
+    //     // expect(response.results[0].bolean).not.toBeDefined();
+    //     expect(response.code).toBe(200);
+    //     done();
+    //   });
+    // });
 
     it('test_get_with_one_condition', function (done) {
       scope.init();
@@ -111,6 +187,7 @@ describe('Controller: MainCtrl', function () {
       scope.test_get(table_name, params).then(function (response) {
         expect(response.results).toBeDefined();
         expect(response.results.length).toBeGreaterThan(0);
+        expect(response.results[0].createdBy.objectId).toBeDefined();
         expect(response.code).toBe(200);
         done();
       });
@@ -378,6 +455,22 @@ describe('Controller: MainCtrl', function () {
         expect(response.results.objectId).toBeDefined();
         expect(response.results.username).toBe(credentials.username);
         expect(response.code).toBe(200);
+        // scope.logout();
+        done();
+      });
+    });
+
+    it('test login without password', function (done) {
+      scope.init();
+
+      var credentials = {
+        username: users[0].username,
+      }
+
+      scope.test_login(credentials).then(function (response) {
+        expect(response.results).toBeDefined();
+        expect(response.results.error).toBeDefined();
+        expect(response.results.code).toBe(201);
         done();
       });
     });
@@ -415,5 +508,60 @@ describe('Controller: MainCtrl', function () {
     });
 
   });
+  
+  describe('test update user', function () {
 
+    it('test update user simple', function (done) {
+      scope.init();
+
+      var credentials = {
+        username: users[0].username,
+        oldPassword: "haibabon",
+        password: "haibabon",
+      }
+
+      scope.test_update_user(credentials).then(function (response) {
+        expect(response.results).toBeDefined();
+        expect(response.results.id).toBe(users[0].objectId);
+        expect(response.code).toBe(200);
+        done();
+      });
+    });
+
+    it('test update user with wrong password', function (done) {
+      scope.init();
+
+      var credentials = {
+        username: users[0].username,
+        oldPassword: "haibabon1",
+        password: "haibabon",
+      }
+      
+      scope.test_update_user(credentials).then(function (response) {
+        expect(response.results).toBeDefined();
+        expect(response.results.error).toBeDefined();
+        expect(response.results.code).toBe(101);
+        scope.logout();
+        done();
+      });
+    });
+
+    it('test update user with wrong username', function (done) {
+      scope.init();
+
+      var credentials = {
+        username: "users[0].username",
+        oldPassword: "haibabon",
+        password: "haibabon",
+      }
+      
+      scope.test_update_user(credentials).then(function (response) {
+        expect(response.results).toBeDefined();
+        expect(response.results.error).toBeDefined();
+        expect(response.results.code).toBe(101);
+        scope.logout();
+        done();
+      });
+    });
+  });
 });

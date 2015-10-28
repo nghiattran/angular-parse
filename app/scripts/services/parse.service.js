@@ -7,7 +7,7 @@ angular
 	.service('parseServies', function Database($rootScope, $q, $http) 
 	{	
 		var dataType = ['string', 'pointer', 'time', 'bolean', 'number'];
-		var parseParams = {include: "_include", limit: "_limit", skip: "_skip", where: "_where", keys: "_select", order: "_order"};
+		var parseParams = {include: "_include", limit: "_limit", skip: "_skip", where: "_where", select: "_select", order: "_order"};
 		var pointerMapping = {};
 		// TODO reading all credentials from external files and make all functions wait
 		// untill it finishes reading
@@ -15,7 +15,8 @@ angular
 		Database.prototype.init = function()
 		{
 			Parse.initialize("aNcLKlFlOSSlgFHdyelHlMLzgVxUB5MutK2Dsn4K", "zwCxqHYtqjjoubvqpoVhqkN5kczWcPUKwVI3vmMk");
-			var data = {
+			Parse.User.enableRevocableSession();
+			var dataStruct = {
 			    "_User": {
 			        "objectId": "string",
 			        "username": "string",
@@ -36,10 +37,11 @@ angular
 			        "createdBy": {
 			          "_type": "pointer",
 			          "to": "_User"
-			        }
+			        },
+			        "file": "file"
 			    }
 			}; 
-			Database.prototype.setPointerMapping(data);
+			Database.prototype.setPointerMapping(dataStruct);
 			// var defer = $q.defer();
 			// Database.prototype.setKeys().then(function(data){
 			// 	if (data.error !== undefined) {
@@ -144,10 +146,11 @@ angular
 						  __type: "Pointer",
 				        className: pointerMapping[keys[i]],
 				        objectId: query[keys[i]]
-				    };
-				}
-
-				if (typeof(query[keys[i]]) === 'object') {
+				    }
+				} 
+				if (query[keys[i]]._source && query[keys[i]]._source.file) {
+					continue
+				} else if (typeof(query[keys[i]]) === 'object') {
 					Database.prototype.encodeQuery(query[keys[i]]);
 				}
 			}
@@ -164,9 +167,16 @@ angular
 			{
 				if (pointerMapping[keys[i]]) {
 					query[keys[i]] = query[keys[i]].objectId;
-				}
-				if (typeof(query[keys[i]]) === 'object') {
-					Database.prototype.decodeData(query[keys[i]]);
+				} else if (typeof(query[keys[i]]) === 'object') {
+					if ( query[keys[i]]._url)
+					{
+						query[keys[i]] = {
+							url : query[keys[i]]._url,
+							name : query[keys[i]]._name
+						}
+					} else {
+						Database.prototype.decodeData(query[keys[i]]);
+					}
 				}
 			}
 			return query;
@@ -232,6 +242,9 @@ angular
 		};
 
 		Database.prototype.login = function(data){
+			if (Parse.User.current()) {
+				Parse.User.logOut();
+			};
 			var defer = $q.defer();
 			Parse.User.logIn(data.username, data.password, {
 				success: function(data) {
@@ -249,40 +262,46 @@ angular
 			return defer.promise;
 		};
 
+		Database.prototype.getCurrentUser = function()
+		{
+			return Parse.User.current();
+		}
+
 		Database.prototype.logout = function(){
 			Parse.User.logOut();
 		};
 
 		Database.prototype.updateUser = function(data){
 			var currentUser = Parse.User.current();
-			var loginreturnData = {
-				'username': currentUser.attributes.username,
-				"password": data.password,
-			};
+			if (currentUser) {
+				username = currentUser.attributes.username
+			} else {
+				var username = data.username
+			}
 			var defer = $q.defer();
-			Database.prototype.login(loginreturnData).then(function(returnData){
-				if (!returnData.results.error) {
-						currentUser.set("password", data.newpassword);
-						currentUser.set("email", data.email);
-					if(currentUser)
-					{
-						currentUser.save(null, {
-							success: function(currentUser) {
-								defer.resolve({results: currentUser, code: 200});
-								$rootScope.$apply();
-							},
-							error: function(currentUser, error) {
-								handleParseError(error.code);
-								defer.resolve({results:{error: error.message, code: error.code}});
-								$rootScope.$apply();
-							}
-						});
-					}
-				} else{
-					defer.resolve({results:{error: returnData.results.error, code: returnData.results.code}});
+			Parse.User.logIn(data.username, data.oldPassword, {
+				success: function(data) {
+					currentUser = Parse.User.current();
+					currentUser.set("password", data.password);
+					currentUser.set("email", data.email);
+					currentUser.save(null, {
+						success: function(currentUser) {
+							defer.resolve({results: currentUser, code: 200});
+							$rootScope.$apply();
+						},
+						error: function(currentUser, error) {
+							handleParseError(error.code);
+							defer.resolve({results:{error: error.message, code: error.code}});
+							$rootScope.$apply();
+						}
+					});
+				},
+				error: function(data, error) {
+					handleParseError(error.code);
+					defer.resolve({results:{error: error.message, code: error.code}});
 					$rootScope.$apply();
 				}
-      		});
+			});
 			return defer.promise;
 		};
 
@@ -313,14 +332,12 @@ angular
 			Database.prototype.encodeQuery(params);
 			var query = new Parse.Query(Parse.Object.extend(table_name));
 			var defer = $q.defer();
-
 			var keys = Object.keys(params);
 			for (var i = 0; i < keys.length; i++) {
 				if (parseParams[keys[i]]) {
 					query[parseParams[keys[i]]] = params[keys[i]];
 				}
 			}
-
 			query.find({
 				success: function(data) {
 					var results = new Database();
@@ -408,6 +425,18 @@ angular
 			  }
 			});
 			return defer.promise;
+		};
+
+		Database.prototype.uploadFile = function(file){
+			var parseFile = new Parse.File(file[0].name, file[0]);
+			var defer = $q.defer();
+			parseFile.save().then(function() {
+				defer.resolve({results: parseFile, code: 200});
+		    }, function(error) {
+		    	defer.resolve({results:{error: error.reponseText, code: error.status}});
+		    });
+			return defer.promise;
+		    
 		};
 
 		function handleParseError(err) {
