@@ -8,6 +8,22 @@
  * Controller of the angularParseApp
  */
 angular.module('angularParseApp')
+  .directive("fileread", [function () {
+      return {
+        scope: {
+            fileread: "="
+        },
+        link: function (scope, element, attributes) {
+            element.bind("change", function (changeEvent) {
+              scope.$apply(function () {
+                  // scope.fileread = changeEvent.target.files[0];
+                  // or all selected files:
+                  scope.fileread = changeEvent.target.files;
+              });
+            });
+        }
+      }
+  }])
   .controller('MainCtrl', function (parseServies, $scope, $q, $rootScope, $timeout) {
     // parseServies.init();
   // parseServies.setKeys("aNcLKlFlOSSlgFHdyelHlMLzgVxUB5MutK2Dsn4K", "zwCxqHYtqjjoubvqpoVhqkN5kczWcPUKwVI3vmMk");
@@ -121,6 +137,7 @@ angular.module('angularParseApp')
     parseServies.get(table_name, params).then(function(data)
     {
       defer.resolve(data);
+      // console.log(data.results)
     })
     return defer.promise;
   }
@@ -170,6 +187,25 @@ angular.module('angularParseApp')
     return defer.promise;
   }
 
+  $scope.test_update_user =  function(credentials)
+  {
+    var defer = $q.defer();
+    parseServies.updateUser(credentials).then(function(data){
+      defer.resolve(data);
+    })
+    return defer.promise;
+  }
+
+  $scope.test_current_user =  function(credentials)
+  {
+    return parseServies.getCurrentUser();
+  }
+
+  $scope.logout =  function(credentials)
+  {
+    parseServies.logout();
+  }
+
   // $scope.test_signup(username1 , 2);
 
   $scope.init = function()
@@ -177,18 +213,39 @@ angular.module('angularParseApp')
     parseServies.init();
   }
 
-  var params = {where: {
-    name: "test function",
-    createdBy: "PNteddARfT"
-  }};
+  var params = {
+    where: {
+      order: {"$gte": 3}
+      // objectId: "5iRU3a50cb"
+      // objectId: "2DejK1qDZX"
+      // name: "test function",
+      // createdBy: "PNteddARfT"
+    },
+    // select: ["name"]
+    // include: ["onShelf"]
+    // include: ["createdBy", "createdAt"]
+  };
 
   var credentials = {
     username: "one",
     password: "haibabon"
   }
   
+  $scope.test = function(redentials)
+  {
+    var fileUploadControl = redentials.files;
+    for (var i = 0; i < redentials.files.length; i++) {
+      var parseFile = new Parse.File(name, fileUploadControl);
+    };
+    
+  }
+  
+
+
   // $scope.init();
   // $scope.test_login(credentials);
+  // console.log(parseServies.getCurrentUser());
+  // $scope.logout();
   // $scope.test_signup(credentials);
   // $scope.test_get("Shelves", params);
   // $scope.test_delete("Shelves", "npMx7WWfsV");

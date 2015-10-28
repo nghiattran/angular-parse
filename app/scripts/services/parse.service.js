@@ -7,7 +7,7 @@ angular
 	.service('parseServies', function Database($rootScope, $q, $http) 
 	{	
 		var dataType = ['string', 'pointer', 'time', 'bolean', 'number'];
-		var parseParams = {include: "_include", limit: "_limit", skip: "_skip", where: "_where", keys: "_select", order: "_order"};
+		var parseParams = {include: "_include", limit: "_limit", skip: "_skip", where: "_where", select: "_select", order: "_order"};
 		var pointerMapping = {};
 		// TODO reading all credentials from external files and make all functions wait
 		// untill it finishes reading
@@ -15,6 +15,7 @@ angular
 		Database.prototype.init = function()
 		{
 			Parse.initialize("aNcLKlFlOSSlgFHdyelHlMLzgVxUB5MutK2Dsn4K", "zwCxqHYtqjjoubvqpoVhqkN5kczWcPUKwVI3vmMk");
+			Parse.User.enableRevocableSession();
 			var data = {
 			    "_User": {
 			        "objectId": "string",
@@ -232,6 +233,9 @@ angular
 		};
 
 		Database.prototype.login = function(data){
+			if (Parse.User.current()) {
+				Parse.User.logOut();
+			};
 			var defer = $q.defer();
 			Parse.User.logIn(data.username, data.password, {
 				success: function(data) {
@@ -249,40 +253,46 @@ angular
 			return defer.promise;
 		};
 
+		Database.prototype.getCurrentUser = function()
+		{
+			return Parse.User.current();
+		}
+
 		Database.prototype.logout = function(){
 			Parse.User.logOut();
 		};
 
 		Database.prototype.updateUser = function(data){
 			var currentUser = Parse.User.current();
-			var loginreturnData = {
-				'username': currentUser.attributes.username,
-				"password": data.password,
-			};
+			if (currentUser) {
+				username = currentUser.attributes.username
+			} else {
+				var username = data.username
+			}
 			var defer = $q.defer();
-			Database.prototype.login(loginreturnData).then(function(returnData){
-				if (!returnData.results.error) {
-						currentUser.set("password", data.newpassword);
-						currentUser.set("email", data.email);
-					if(currentUser)
-					{
-						currentUser.save(null, {
-							success: function(currentUser) {
-								defer.resolve({results: currentUser, code: 200});
-								$rootScope.$apply();
-							},
-							error: function(currentUser, error) {
-								handleParseError(error.code);
-								defer.resolve({results:{error: error.message, code: error.code}});
-								$rootScope.$apply();
-							}
-						});
-					}
-				} else{
-					defer.resolve({results:{error: returnData.results.error, code: returnData.results.code}});
+			Parse.User.logIn(data.username, data.oldPassword, {
+				success: function(data) {
+					currentUser = Parse.User.current();
+					currentUser.set("password", data.password);
+					currentUser.set("email", data.email);
+					currentUser.save(null, {
+						success: function(currentUser) {
+							defer.resolve({results: currentUser, code: 200});
+							$rootScope.$apply();
+						},
+						error: function(currentUser, error) {
+							handleParseError(error.code);
+							defer.resolve({results:{error: error.message, code: error.code}});
+							$rootScope.$apply();
+						}
+					});
+				},
+				error: function(data, error) {
+					handleParseError(error.code);
+					defer.resolve({results:{error: error.message, code: error.code}});
 					$rootScope.$apply();
 				}
-      		});
+			});
 			return defer.promise;
 		};
 
@@ -313,14 +323,15 @@ angular
 			Database.prototype.encodeQuery(params);
 			var query = new Parse.Query(Parse.Object.extend(table_name));
 			var defer = $q.defer();
-
 			var keys = Object.keys(params);
 			for (var i = 0; i < keys.length; i++) {
 				if (parseParams[keys[i]]) {
 					query[parseParams[keys[i]]] = params[keys[i]];
 				}
 			}
-
+			
+			// query.notEqualTo("name", "test function");
+			// console.log(query)
 			query.find({
 				success: function(data) {
 					var results = new Database();
