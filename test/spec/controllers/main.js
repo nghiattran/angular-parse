@@ -394,7 +394,7 @@ describe('Controller: MainCtrl', function () {
 
       var credentials = {
         username: username,
-        password: "haibabon",
+        password: "testing",
         email: username + "@email.com"
       }
 
@@ -411,7 +411,7 @@ describe('Controller: MainCtrl', function () {
 
       var credentials = {
         username: users[0].username,
-        password: "haibabon",
+        password: "testing",
       }
       scope.test_signup(credentials).then(function (response) {
         expect(response.results).toBeDefined();
@@ -426,7 +426,7 @@ describe('Controller: MainCtrl', function () {
 
     //   var credentials = {
     //     username: username,
-    //     password: "haibabon",
+    //     password: "testing",
     //     email: username + "@email.com"
     //   }
 
@@ -447,7 +447,7 @@ describe('Controller: MainCtrl', function () {
 
       var credentials = {
         username: users[0].username,
-        password: "haibabon",
+        password: "testing",
       }
 
       scope.test_login(credentials).then(function (response) {
@@ -496,7 +496,7 @@ describe('Controller: MainCtrl', function () {
 
       var credentials = {
         username: "users[0].username",
-        password: "haibabon",
+        password: "testing",
       }
 
       scope.test_login(credentials).then(function (response) {
@@ -516,8 +516,8 @@ describe('Controller: MainCtrl', function () {
 
       var credentials = {
         username: users[0].username,
-        oldPassword: "haibabon",
-        password: "haibabon",
+        oldPassword: "testing",
+        password: "testing",
       }
 
       scope.test_update_user(credentials).then(function (response) {
@@ -533,8 +533,8 @@ describe('Controller: MainCtrl', function () {
 
       var credentials = {
         username: users[0].username,
-        oldPassword: "haibabon1",
-        password: "haibabon",
+        oldPassword: "testing1",
+        password: "testing",
       }
       
       scope.test_update_user(credentials).then(function (response) {
@@ -551,8 +551,8 @@ describe('Controller: MainCtrl', function () {
 
       var credentials = {
         username: "users[0].username",
-        oldPassword: "haibabon",
-        password: "haibabon",
+        oldPassword: "testing",
+        password: "testing",
       }
       
       scope.test_update_user(credentials).then(function (response) {
