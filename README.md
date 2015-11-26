@@ -47,15 +47,15 @@ createdBy and onShelf are column name which are pointing to _User and Shelves cl
 		}
 	})
 
-* 'params' structure 
+* `params` structure 
 
 	params
-		\- where	(Arguments for query)
-		\- order 	(Specify a field to sort by)
-		\- limit	(Limit the number of objects returned by the query)
-		\- skip 	(Use with limit to paginate through results)
-		\- keys 	(Restrict the fields returned by the query)
-		\- include	(Use on Pointer columns to return the full object)
+	\- where	(Arguments for query)
+	\- order 	(Specify a field to sort by)
+	\- limit	(Limit the number of objects returned by the query)
+	\- skip 	(Use with limit to paginate through results)
+	\- keys 	(Restrict the fields returned by the query)
+	\- include	(Use on Pointer columns to return the full object)
 
 
 Angular-parse will converse objectId in 'where' to pointer type. So use
