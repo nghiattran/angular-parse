@@ -128,7 +128,7 @@ angular
 			{
 				if (pointerMapping[keys[i]]) {
 					query[keys[i]] = {
-						  __type: "Pointer",
+						__type: "Pointer",
 				        className: pointerMapping[keys[i]],
 				        objectId: query[keys[i]]
 				    }

@@ -19,8 +19,9 @@ You can find your keys in Settings->Keys
 	parseServices.setPointerMappingSimple(dataStructure);
 
 dataStructure has to be an object containing column names and where the pointers pointing to
+
 Example:
-	dataStructur = {
+	dataStructure = {
 		createdBy: '_User',
 		onShelf: 'Shelves'
 	}
@@ -29,3 +30,44 @@ createdBy and onShelf are column name which are pointing to _User and Shelves cl
 
 # Requests
 
+### Get
+
+	var params = { 
+	    where: {
+	    	createdBy: "objectId of an entry"
+	    },
+	    include: ['createdBy'],
+	    limit: 5
+	}
+	parseServices.get(class_name, params).then(function(response){
+		if (!response.results.error) {
+			# do something
+		} else{
+			# Error
+		}
+	})
+
+* 'params' structure 
+
+	params
+		\- where	(Arguments for query)
+		\- order 	(Specify a field to sort by)
+		\- limit	(Limit the number of objects returned by the query)
+		\- skip 	(Use with limit to paginate through results)
+		\- keys 	(Restrict the fields returned by the query)
+		\- include	(Use on Pointer columns to return the full object)
+
+
+Angular-parse will converse objectId in 'where' to pointer type. So use
+
+	where: {
+    	createdBy: "objectId of an entry"
+    },
+
+instead of
+
+	where: {
+		__type: "Pointer",
+		className: "_User",
+    	createdBy: "objectId of an entry"
+    },
