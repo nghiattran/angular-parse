@@ -146,7 +146,8 @@ angular.module('angularParseApp')
 
   $scope.init = function()
   {
-    parseServices.init();
+    parseServices.setKeysSimple("aNcLKlFlOSSlgFHdyelHlMLzgVxUB5MutK2Dsn4K", "zwCxqHYtqjjoubvqpoVhqkN5kczWcPUKwVI3vmMk");
+    parseServices.setPointerMappingSimple({createdBy: '_User', onShelf: 'Shelves'});
   }
   
   $scope.test = function(redentials)

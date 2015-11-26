@@ -11,6 +11,21 @@
 
 # Get started
 
+### Set keys (you can find your keys in Settings->Keys)
+	parseServices.setKeysSimple(applicationId, javascriptKey);
+You can find your keys in Settings->Keys
 
+### Set pointer type
+	parseServices.setPointerMappingSimple(dataStructure);
 
+dataStructure has to be an object containing column names and where the pointers pointing to
+Example:
+	dataStructur = {
+		createdBy: '_User',
+		onShelf: 'Shelves'
+	}
+
+createdBy and onShelf are column name which are pointing to _User and Shelves classes respectively
+
+# Requests
 

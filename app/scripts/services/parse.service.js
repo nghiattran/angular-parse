@@ -113,7 +113,7 @@ angular
 
 		// set Parse keys simple
 		Database.prototype.setKeysSimple = function(applicationId, javascriptKey){
-			Parse.initialize(data.applicationId, data.javascriptKey);
+			Parse.initialize(applicationId, javascriptKey);
 		}
 
 		// Mapping Pointer
