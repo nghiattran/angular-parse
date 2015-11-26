@@ -33,10 +33,12 @@ createdBy and onShelf are column name which are pointing to _User and Shelves cl
 ### Return format
 
 * Success
+
 	response
 	\ - results								# Data returned from Parse
 	\ - code 								# Status code
 * Fail
+
 	response
 	\ - error
 		\ - message							# Error message
@@ -62,11 +64,17 @@ createdBy and onShelf are column name which are pointing to _User and Shelves cl
 * `params` structure 
 
 	params
+
 	\ - where	(Arguments for query)
+
 	\ - order 	(Specify a field to sort by)
+
 	\ - limit	(Limit the number of objects returned by the query)
+
 	\ - skip 	(Use with limit to paginate through results)
+
 	\ - keys 	(Restrict the fields returned by the query)
+	
 	\ - include	(Use on Pointer columns to return the full object)
 
 * Query Constraints
