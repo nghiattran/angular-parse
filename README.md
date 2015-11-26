@@ -34,21 +34,21 @@ createdBy and onShelf are column name which are pointing to _User and Shelves cl
 
 * Success
 
-	response
+		response
 
-	\ - results								# Data returned from Parse
+		\-results							# Data returned from Parse
 
-	\ - code 								# Status code
+		\-code 								# Status code
 
 * Fail
 
 	response
 
-	\ - error
+	\-error
 
-		\ - message							# Error message
-		
-		\ - code 							# Status code
+		\-message							# Error message
+
+		\-code 								# Status code
 
 ### Get
 
@@ -59,7 +59,7 @@ createdBy and onShelf are column name which are pointing to _User and Shelves cl
 	    include: ["createdBy"],				# Return object that "createdBy" column pointing to
 	    limit: 5							# Limit results to 5 entries
 	}
-	parseServices.get(class_name, params).then(function(response){
+	parseServices.get(table_name, params).then(function(response){
 		if (!response.results.error) {
 			# do something
 		} else{
@@ -71,17 +71,17 @@ createdBy and onShelf are column name which are pointing to _User and Shelves cl
 
 		params
 
-		\ - where	(Arguments for query)
+		\-where								(Arguments for query)
 
-		\ - order 	(Specify a field to sort by)
+		\-order 							(Specify a field to sort by)
 
-		\ - limit	(Limit the number of objects returned by the query)
+		\-limit								(Limit the number of objects returned by the query)
 
-		\ - skip 	(Use with limit to paginate through results)
+		\-skip 								(Use with limit to paginate through results)
 
-		\ - keys 	(Restrict the fields returned by the query)
+		\-keys 								(Restrict the fields returned by the query)
 
-		\ - include	(Use on Pointer columns to return the full object)
+		\-include							(Use on Pointer columns to return the full object)
 
 * Query Constraints
 
@@ -98,10 +98,10 @@ createdBy and onShelf are column name which are pointing to _User and Shelves cl
 	$all			Contains all of the given values
 	$regex			Requires that a key's value match a regular expression
 
-Angular-parse will converse objectId in 'where' to pointer type. So use
+Angular-parse will converse object_id in 'where' to pointer type. So use
 
 	where: {
-    	createdBy: "objectId of an entry"
+    	createdBy: "object_id of an entry"
     },
 
 instead of
@@ -109,6 +109,35 @@ instead of
 	where: {
 		__type: "Pointer",
 		className: "_User",
-    	createdBy: "objectId of an entry"
+    	createdBy: "object_id of an entry"
     },
 
+### Post
+
+	parseServices.post(table_name, payload).then(function(reponse){
+    	if (!response.results.error) {
+			# do something
+		} else{
+			# Error
+		}
+    })
+
+### Put
+
+	parseServices.put(table_name, object_id, payload).then(function(reponse){
+    	if (!response.results.error) {
+			# do something
+		} else{
+			# Error
+		}
+    })
+
+### Delete
+
+	parseServices.delete(table_name, objectId).then(function(reponse){
+    	if (!response.results.error) {
+			# do something
+		} else{
+			# Error
+		}
+    })
