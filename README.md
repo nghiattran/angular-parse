@@ -11,9 +11,9 @@
 
 # Get started
 
-### Set keys (you can find your keys in Settings->Keys)
+### Set keys
 	parseServices.setKeysSimple(applicationId, javascriptKey);
-You can find your keys in Settings->Keys
+You can find your keys in Parse -> Settings -> Keys
 
 ### Set pointer type
 	parseServices.setPointerMappingSimple(dataStructure);
@@ -30,14 +30,26 @@ createdBy and onShelf are column name which are pointing to _User and Shelves cl
 
 # Requests
 
+### Return format
+
+* Success
+	response
+	\ - results								# Data returned from Parse
+	\ - code 								# Status code
+* Fail
+	response
+	\ - error
+		\ - message							# Error message
+		\ - code 							# Status code
+
 ### Get
 
 	var params = { 
 	    where: {
-	    	createdBy: "objectId of an entry"
+	    	"number" = { "$gt" : 5 }		# Query entries that have "number" value greater than 5
 	    },
-	    include: ['createdBy'],
-	    limit: 5
+	    include: ["createdBy"],				# Return object that "createdBy" column pointing to
+	    limit: 5							# Limit results to 5 entries
 	}
 	parseServices.get(class_name, params).then(function(response){
 		if (!response.results.error) {
@@ -50,13 +62,27 @@ createdBy and onShelf are column name which are pointing to _User and Shelves cl
 * `params` structure 
 
 	params
-	\- where	(Arguments for query)
-	\- order 	(Specify a field to sort by)
-	\- limit	(Limit the number of objects returned by the query)
-	\- skip 	(Use with limit to paginate through results)
-	\- keys 	(Restrict the fields returned by the query)
-	\- include	(Use on Pointer columns to return the full object)
+	\ - where	(Arguments for query)
+	\ - order 	(Specify a field to sort by)
+	\ - limit	(Limit the number of objects returned by the query)
+	\ - skip 	(Use with limit to paginate through results)
+	\ - keys 	(Restrict the fields returned by the query)
+	\ - include	(Use on Pointer columns to return the full object)
 
+* Query Constraints
+
+	$lt				Less Than
+	$lte			Less Than Or Equal To
+	$gt				Greater Than
+	$gte			Greater Than Or Equal To
+	$ne				Not Equal To
+	$in				Contained In
+	$nin			Not Contained in
+	$exists			A value is set for the key
+	$select			This matches a value for a key in the result of a different query
+	$dontSelect		Requires that a key's value not match a value for a key in the result of a different query
+	$all			Contains all of the given values
+	$regex			Requires that a key's value match a regular expression
 
 Angular-parse will converse objectId in 'where' to pointer type. So use
 
@@ -71,3 +97,4 @@ instead of
 		className: "_User",
     	createdBy: "objectId of an entry"
     },
+
