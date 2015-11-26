@@ -10,5 +10,5 @@
  */
 angular
   .module('angularParseApp', [
-    'parseServies'
+    'parseService'
     ]);

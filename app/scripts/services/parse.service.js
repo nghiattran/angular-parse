@@ -4,7 +4,7 @@
 angular
     .module('parseServies', [
   	])
-	.service('parseServies', function Database($rootScope, $q, $http) 
+	.service('parseServices', function Database($rootScope, $q, $http) 
 	{	
 		var dataType = ['string', 'pointer', 'time', 'bolean', 'number'];
 		var parseParams = {include: "_include", limit: "_limit", skip: "_skip", where: "_where", select: "_select", order: "_order"};
