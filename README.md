@@ -7,7 +7,7 @@
 
 [![image](angular-parse.png)]()
 
-[Get started](https://github.com/nghiattran/python-parse)&nbsp;&nbsp;&nbsp;[Demo](https://github.com/nghiattran/python-parse)
+[Get started](https://github.com/nghiattran/angular-parse/blob/gh-pages/README.md#get-started)&nbsp;&nbsp;&nbsp;[Request](https://github.com/nghiattran/angular-parse/blob/gh-pages/README.md#requests)&nbsp;&nbsp;&nbsp;[Demo](https://github.com/nghiattran/python-parse)
 
 # Get started
 
@@ -36,19 +36,19 @@ createdBy and onShelf are column name which are pointing to _User and Shelves cl
 
 		response
 
-		\-results							# Data returned from Parse
+			\-results						# Data returned from Parse
 
-		\-code 								# Status code
+			\-code 							# Status code
 
 * Fail
 
-	response
+		response
 
-	\-error
+			\-error
 
-		\-message							# Error message
+				\-message					# Error message
 
-		\-code 								# Status code
+				\-code 						# Status code
 
 ### Get
 
@@ -71,17 +71,17 @@ createdBy and onShelf are column name which are pointing to _User and Shelves cl
 
 		params
 
-		\-where								(Arguments for query)
+			\-where							(Arguments for query)
 
-		\-order 							(Specify a field to sort by)
+			\-order 						(Specify a field to sort by)
 
-		\-limit								(Limit the number of objects returned by the query)
+			\-limit							(Limit the number of objects returned by the query)
 
-		\-skip 								(Use with limit to paginate through results)
+			\-skip 							(Use with limit to paginate through results)
 
-		\-keys 								(Restrict the fields returned by the query)
+			\-keys 							(Restrict the fields returned by the query)
 
-		\-include							(Use on Pointer columns to return the full object)
+			\-include						(Use on Pointer columns to return the full object)
 
 * Query Constraints
 
