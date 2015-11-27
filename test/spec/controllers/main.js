@@ -187,7 +187,8 @@ describe('Controller: TestCtrl', function () {
       scope.test_get(table_name, params).then(function (response) {
         expect(response.results).toBeDefined();
         expect(response.results.length).toBeGreaterThan(0);
-        expect(response.results[0].createdBy.objectId).toBeDefined();
+        expect(response.results[0].createdBy).toBeDefined();
+        expect(response.results[0].createdBy).toBe(created_by);
         expect(response.code).toBe(200);
         done();
       });
