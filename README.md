@@ -5,9 +5,9 @@
 > Angular-parse is an Angularjs service to connect to Parse database much more easily and quickly by bypassing entire server side, everything will be handle on client side with Angularjs. This project is only intended for building MVP or prototype.
 ###Project is terminated, use [Python-parse](https://github.com/nghiattran/python-parse) instead 
 
-[![image](angular-parse.png)]()
+[![image](angular-parse.png)](https://github.com/nghiattran/angular-parse/blob/gh-pages/README.md#get-started)
 
-[Get started](https://github.com/nghiattran/angular-parse/blob/gh-pages/README.md#get-started)&nbsp;&nbsp;&nbsp;[Request](https://github.com/nghiattran/angular-parse/blob/gh-pages/README.md#requests)&nbsp;&nbsp;&nbsp;[Demo](https://github.com/nghiattran/python-parse)
+[Get started](https://github.com/nghiattran/angular-parse/blob/gh-pages/README.md#get-started)&nbsp;&nbsp;&nbsp;[Request](https://github.com/nghiattran/angular-parse/blob/gh-pages/README.md#requests)&nbsp;&nbsp;&nbsp;[Demo](http://nghiattran.github.io/angular-parse/)
 
 # Get started
 
