@@ -4,19 +4,135 @@
 angular
     .module('parseServies', [
   	])
-  .service('parseServies', function Database($rootScope, $q) 
-	{
-		
-		var parseParams = {include: "_include", limit: "_limit", skip: "_skip", where: "_where", keys: "_select", order: "_order"};
-		var pointerMapping;
+	.service('parseServies', function Database($rootScope, $q, $http) 
+	{	
+		var dataType = ['string', 'pointer', 'time', 'bolean', 'number'];
+		var parseParams = {include: "_include", limit: "_limit", skip: "_skip", where: "_where", select: "_select", order: "_order"};
+		var pointerMapping = {};
+		// TODO reading all credentials from external files and make all functions wait
+		// untill it finishes reading
+		// Initialize database
+		Database.prototype.init = function()
+		{
+			Parse.initialize("aNcLKlFlOSSlgFHdyelHlMLzgVxUB5MutK2Dsn4K", "zwCxqHYtqjjoubvqpoVhqkN5kczWcPUKwVI3vmMk");
+			Parse.User.enableRevocableSession();
+			var dataStruct = {
+			    "_User": {
+			        "objectId": "string",
+			        "username": "string",
+			        "password": "string",
+			        "email": "string",
+			        "createdAt": "time",
+			        "updatedAt": "time",
+			        "emailVerified": "bolean"
+			      },
+
+			    "Shelves": {
+			        "objectId": "string",
+			        "name": "string",
+			        "description": "string",
+			        "order": "number",
+			        "createdAt": "time",
+			        "updatedAt": "time",
+			        "createdBy": {
+			          "_type": "pointer",
+			          "to": "_User"
+			        },
+			        "file": "file"
+			    }
+			}; 
+			Database.prototype.setPointerMapping(dataStruct);
+			// var defer = $q.defer();
+			// Database.prototype.setKeys().then(function(data){
+			// 	if (data.error !== undefined) {
+			// 		console.error(data.error.message);
+			// 	};
+			// 	
+			// })
+			// Database.prototype.modelDatabase().then(function(data){
+			// 	if (data.error !== undefined) {
+			// 		console.error(data.error.message);
+			// 	};
+
+			// 	defer.resolve({results:{message: 'Successfully initialized', code: 202}});
+			// })
+			// return defer.promise;
+		}
+
+		Database.prototype.setPointerMapping = function(tables) {
+			for (var table in tables) {
+				for (var column in tables[table]) {
+					if (dataType.indexOf(tables[table][column]) === -1 && dataType.indexOf(tables[table][column]['_type']) ===-1)
+					{
+						return {error:{message: 'Invalid data type'}};
+					} else if (tables[table][column]['_type'] == 'pointer')
+					{
+						pointerMapping[column] = tables[table][column]['to'];
+					}
+				};
+			};
+		}
+
+		// Modeling database and validate field
+		Database.prototype.modelDatabase = function() {
+			var defer = $q.defer();
+			Database.prototype.readDatabaseStruct().then(function(data){
+				Database.prototype.setPointerMapping(data[1])
+				Parse.initialize(data.applicationId, data.javascriptKey);
+				defer.resolve({results:{message: 'Database contructed successfully', code: 202}});
+			});
+			return defer.promise;
+		}
+
+		// Read in database structure from dataStruct.json
+		Database.prototype.readDatabaseStruct = function() {
+	        var defer = $q.defer();
+	        $http.get('dataStruct.json')
+	            .success(function(data) {
+	                defer.resolve(data);
+	            })
+	            .error(function() {
+	                defer.reject('Could not find dataStruct.json');
+	            });
+
+	        return defer.promise;
+	    }
+
+	    // Read in keys from keys.json
+		Database.prototype.readParseKeys = function() {
+	        var defer = $q.defer();
+	        $http.get('keys.json')
+	            .success(function(data) {
+	                defer.resolve(data);
+	            })
+	            .error(function() {
+	                defer.reject('Could not find keys.json');
+	            });
+
+	        return defer.promise;
+	    }
 
 		// set Parse keys
 		Database.prototype.setKeys = function(applicationId, javascriptKey){
-			Parse.initialize(applicationId, javascriptKey);
+			var defer = $q.defer();
+			Database.prototype.readParseKeys().then(function(data){
+				if (data['applicationId'] === undefined || data['javascriptKey'] === undefined) {
+					defer.resolve({error:{message: 'One or both keys for Parse are missing', code: 422}});
+				} else {
+					Parse.initialize(data.applicationId, data.javascriptKey);
+					defer.resolve({results:{message: 'Successfully initialized', code: 202}});
+				}
+			})
+			return defer.promise;
 		};
 
-		// Set mapping Pointer
-		Database.prototype.setPointerMapping = function(setting){
+		// set Parse keys simple
+		Database.prototype.setKeysSimple = function(applicationId, javascriptKey){
+			Parse.initialize(data.applicationId, data.javascriptKey);
+		}
+
+		// Mapping Pointer
+		Database.prototype.setPointerMappingSimple = function(setting){
 			pointerMapping = setting;
 		};
 
@@ -27,13 +143,14 @@ angular
 			{
 				if (pointerMapping[keys[i]]) {
 					query[keys[i]] = {
-					  __type: "Pointer",
-		        className: pointerMapping[keys[i]],
-		        objectId: query[keys[i]]
-			    };
-				}
-
-				if (typeof(query[keys[i]]) === 'object') {
+						  __type: "Pointer",
+				        className: pointerMapping[keys[i]],
+				        objectId: query[keys[i]]
+				    }
+				} 
+				if (query[keys[i]]._source && query[keys[i]]._source.file) {
+					continue
+				} else if (typeof(query[keys[i]]) === 'object') {
 					Database.prototype.encodeQuery(query[keys[i]]);
 				}
 			}
@@ -50,9 +167,16 @@ angular
 			{
 				if (pointerMapping[keys[i]]) {
 					query[keys[i]] = query[keys[i]].objectId;
-				}
-				if (typeof(query[keys[i]]) === 'object') {
-					Database.prototype.decodeData(query[keys[i]]);
+				} else if (typeof(query[keys[i]]) === 'object') {
+					if ( query[keys[i]]._url)
+					{
+						query[keys[i]] = {
+							url : query[keys[i]]._url,
+							name : query[keys[i]]._name
+						}
+					} else {
+						Database.prototype.decodeData(query[keys[i]]);
+					}
 				}
 			}
 			return query;
@@ -96,41 +220,52 @@ angular
 
 		// Users
 		Database.prototype.signup = function(data){
+			var defer = $q.defer();
 			var user = new Parse.User();
 			user.set("username", data.username);
 			user.set("password", data.password);
 			user.set("email", data.email);
-
-			var deferred = $q.defer();
 			user.signUp(null, {
-			  success: function(data) {
-			    var results = new Database();
+				success: function(data) {
+				var results = new Database();
 					results.setPointerMapping(pointerMapping);
-					deferred.resolve({'results': results.decodeData(results.stripObject(data))});
-			  },
-			  error: function(data, error) {
-			  	handleParseError(error.code);
-			    deferred.resolve({'results':{'error': error.message, 'code': error.code}});
-			  }
+					defer.resolve({results: results.decodeData(results.stripObject(data)), code: 200});
+					$rootScope.$apply();
+				},
+				error: function(data, error) {
+					handleParseError(error.code);
+					defer.resolve({results:{error: error.message, code: error.code}});
+					$rootScope.$apply();
+				}
 			});
-			return deferred.promise;
+			return defer.promise;
 		};
 
 		Database.prototype.login = function(data){
-			var deferred = $q.defer();
+			if (Parse.User.current()) {
+				Parse.User.logOut();
+			};
+			var defer = $q.defer();
 			Parse.User.logIn(data.username, data.password, {
 				success: function(data) {
 					var results = new Database();
 					results.setPointerMapping(pointerMapping);
-					deferred.resolve({'results': results.decodeData(results.stripObject(data))});
+					defer.resolve({results: results.decodeData(results.stripObject(data)), code: 200});
+					$rootScope.$apply();
 				},
 				error: function(data, error) {
 					handleParseError(error.code);
-					deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+					defer.resolve({results:{error: error.message, code: error.code}});
+					$rootScope.$apply();
 				}
 			});
-			return deferred.promise;
+			return defer.promise;
 		};
+
+		Database.prototype.getCurrentUser = function()
+		{
+			return Parse.User.current();
+		}
 
 		Database.prototype.logout = function(){
 			Parse.User.logOut();
@@ -138,114 +273,131 @@ angular
 
 		Database.prototype.updateUser = function(data){
 			var currentUser = Parse.User.current();
-			var loginreturnData = {
-				'username': currentUser.attributes.username,
-				"password": data.password,
-			};
-			var deferred = $q.defer();
-			Database.prototype.login(loginreturnData).then(function(returnData){
-	      if (!returnData.results.error) {
-					currentUser.set("password", data.newpassword);
+			if (currentUser) {
+				username = currentUser.attributes.username
+			} else {
+				var username = data.username
+			}
+			var defer = $q.defer();
+			Parse.User.logIn(data.username, data.oldPassword, {
+				success: function(data) {
+					currentUser = Parse.User.current();
+					currentUser.set("password", data.password);
 					currentUser.set("email", data.email);
-				if(currentUser)
-				{
 					currentUser.save(null, {
 						success: function(currentUser) {
-							deferred.resolve({'results': currentUser});
+							defer.resolve({results: currentUser, code: 200});
+							$rootScope.$apply();
 						},
 						error: function(currentUser, error) {
 							handleParseError(error.code);
-							deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+							defer.resolve({results:{error: error.message, code: error.code}});
+							$rootScope.$apply();
 						}
 					});
+				},
+				error: function(data, error) {
+					handleParseError(error.code);
+					defer.resolve({results:{error: error.message, code: error.code}});
+					$rootScope.$apply();
 				}
-        } else{
-            deferred.resolve({'results':{'error': returnData.results.error, 'code': returnData.results.code}});
-        }
-      });
-			return deferred.promise;
+			});
+			return defer.promise;
 		};
 
 		// REST
 
 		Database.prototype.post = function(table_name, data){
 			var table = new (Parse.Object.extend(table_name))();
-			var deferred = $q.defer();
+			var defer = $q.defer();
 			Database.prototype.encodeQuery(data);
 			table.save(data, {
 				success: function(data) {
 					var results = new Database();
 					results.setPointerMapping(pointerMapping);
-					deferred.resolve({'results': results.decodeData(results.stripObject(data))});
+					defer.resolve({results: results.decodeData(results.stripObject(data)), code: 200});
+					$rootScope.$apply();
 				},
 				error: function(error) {
 					handleParseError(error.code);
-					deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+					defer.resolve({results:{error: error.message, code: error.code}});
+					$rootScope.$apply();
 				}
 			});
-			return deferred.promise;
+			return defer.promise;
+		    
 		};
 
 		Database.prototype.get = function(table_name, params){
 			Database.prototype.encodeQuery(params);
 			var query = new Parse.Query(Parse.Object.extend(table_name));
-			var deferred = $q.defer();
-
+			var defer = $q.defer();
 			var keys = Object.keys(params);
 			for (var i = 0; i < keys.length; i++) {
 				if (parseParams[keys[i]]) {
 					query[parseParams[keys[i]]] = params[keys[i]];
 				}
 			}
-
 			query.find({
 				success: function(data) {
 					var results = new Database();
 					results.setPointerMapping(pointerMapping);
-					deferred.resolve({'results': results.decodeData(results.stripArray(data))});
+					defer.resolve({results: results.decodeData(results.stripArray(data)), code: 200});
+					$rootScope.$apply();
 				},
 				error: function(error) {
 					handleParseError(error.code);
-					deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+					defer.resolve({results:{error: error.message, code: error.code}});
+					$rootScope.$apply();
 				}
 			});
-			return deferred.promise;
+			return defer.promise;
 		};
 
 		Database.prototype.put = function(table_name, objectId, data)
 		{
-			var deferred = $q.defer();
+			var defer = $q.defer();
 			var query = new Parse.Query(Parse.Object.extend(table_name));
+			Database.prototype.encodeQuery(data);
 			query.equalTo("objectId", objectId);
 			query.first({
 			  success: function(object) {
 			  	var keys = Object.keys(data);
-			  	for (var i = 0; i < keys.length; i++) {
-			  		object.set(keys[i], data[keys[i]]);
-			  	}
-			    var result = object.save();
-			    result.then(function(){
-			    	var results = new Database();
+			  	if (object) {
+			  		for (var i = 0; i < keys.length; i++) {
+			  			object.set(keys[i], data[keys[i]]);
+				  	}
+				    var result = object.save();
+				    result.then(function(){
+				    	var results = new Database();
 						results.setPointerMapping(pointerMapping);
-			    	if (result._resolved) {
-				    	deferred.resolve({'results': results.decodeData(results.stripArray(result._result))});
-				    } else
-				    {
-				    	deferred.resolve({'results':{'error': "Failed to update"}});
-				    }
-			    });
+				    	if (result._resolved) {
+					    	defer.resolve({results: results.decodeData(results.stripArray(result._result)), code: 200});
+					    	$rootScope.$apply();
+					    } else
+					    {
+					    	defer.resolve({results:{error: "Failed to update", code: 400}});
+					    	$rootScope.$apply();
+					    }
+				    });
+			  	} else {
+			  		defer.resolve({results:{error: "Database.prototype object does not exist", code: 404}});
+			  		$rootScope.$apply();
+			  	}
+			  	
 			  },
 			  error: function(error) {
 			  	handleParseError(error.code);
-			    deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+			    defer.resolve({results:{error: error.message, code: error.code}});
+			  	$rootScope.$apply();
 			  }
 			});
-			return deferred.promise;
+			return defer.promise;
 		};
 
 		Database.prototype.delete = function(table_name, objectId)
 		{
-			var deferred = $q.defer();
+			var defer = $q.defer();
 			var query = new Parse.Query(Parse.Object.extend(table_name));
 			query.equalTo("objectId", objectId);
 			query.first({
@@ -253,33 +405,63 @@ angular
 			  	if (object) {
 				  	object.destroy({
 						  success: function(data) {
-					    	deferred.resolve({'results': "Object " + data.id + " has been deleted"});
+						  	defer.resolve({results:{error: "Object " + data.id + " has been deleted"}, code: 200});
+						  	$rootScope.$apply();
 						  },
 						  error: function(data, error) {
 						  	handleParseError(error.code);
-						    deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+						    defer.resolve({results:{error: error.message, code: error.code}});
+						  	$rootScope.$apply();
 						  }
 						});
 					} else {
-						deferred.resolve({'results':{'error': "Object does not exist", 'code': 404}});
+						defer.resolve({results:{error: "Object does not exist", code: 404}});
+						$rootScope.$apply();
 					}	
 			  },
 			  error: function(error) {
-			    deferred.resolve({'results':{'error': error.message, 'code': error.code}});
+			    defer.resolve({results:{error: error.message, code: error.code}});
+			  	$rootScope.$apply();
 			  }
 			});
-			return deferred.promise;
+			return defer.promise;
 		};
 
+		Database.prototype.uploadFile = function(file){
+			var parseFile = new Parse.File(file[0].name, file[0]);
+			var defer = $q.defer();
+			parseFile.save().then(function() {
+				defer.resolve({results: parseFile, code: 200});
+		    }, function(error) {
+		    	defer.resolve({results:{error: error.reponseText, code: error.status}});
+		    });
+			return defer.promise;
+		    
+		};
 
 		function handleParseError(err) {
-	  switch (err.code) {
-	    case Parse.Error.INVALID_SESSION_TOKEN:
-	      Parse.User.logOut();
-	      break;
-		  }
+			switch (err.code) {
+				case Parse.Error.INVALID_SESSION_TOKEN:
+					Parse.User.logOut();
+					break;
+			}
 		}
 
+		// function checkFlag(param) {
+		//     if($rootScope.is_initialized == false) {
+		//         window.setTimeout(checkFlag, 1); /* Database.prototype checks the flag every 100 milliseconds*/
+		//     } else {
+		//     	console.log("hello")
+		//     }
+		// }
+
+
+		// Database.prototype.request = function(method, table_name, data, objectId)
+		// {
+		// 	if ($rootScope.is_initialized == false) {
+		// 		Database.prototype.init
+		// 	};
+		// }
 	});
 
 	
