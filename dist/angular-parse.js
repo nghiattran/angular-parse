@@ -2,133 +2,17 @@
 'use strict';
 /** @ngInject */
 angular
-    .module('parseServies', [
+    .module('parseServices', [
   	])
-	.service('parseServies', function Database($rootScope, $q, $http) 
+	.service('parseServices', function Database($rootScope, $q, $http) 
 	{	
 		var dataType = ['string', 'pointer', 'time', 'bolean', 'number'];
 		var parseParams = {include: "_include", limit: "_limit", skip: "_skip", where: "_where", select: "_select", order: "_order"};
 		var pointerMapping = {};
-		// TODO reading all credentials from external files and make all functions wait
-		// untill it finishes reading
-		// Initialize database
-		Database.prototype.init = function()
-		{
-			Parse.initialize("aNcLKlFlOSSlgFHdyelHlMLzgVxUB5MutK2Dsn4K", "zwCxqHYtqjjoubvqpoVhqkN5kczWcPUKwVI3vmMk");
-			Parse.User.enableRevocableSession();
-			var dataStruct = {
-			    "_User": {
-			        "objectId": "string",
-			        "username": "string",
-			        "password": "string",
-			        "email": "string",
-			        "createdAt": "time",
-			        "updatedAt": "time",
-			        "emailVerified": "bolean"
-			      },
-
-			    "Shelves": {
-			        "objectId": "string",
-			        "name": "string",
-			        "description": "string",
-			        "order": "number",
-			        "createdAt": "time",
-			        "updatedAt": "time",
-			        "createdBy": {
-			          "_type": "pointer",
-			          "to": "_User"
-			        },
-			        "file": "file"
-			    }
-			}; 
-			Database.prototype.setPointerMapping(dataStruct);
-			// var defer = $q.defer();
-			// Database.prototype.setKeys().then(function(data){
-			// 	if (data.error !== undefined) {
-			// 		console.error(data.error.message);
-			// 	};
-			// 	
-			// })
-			// Database.prototype.modelDatabase().then(function(data){
-			// 	if (data.error !== undefined) {
-			// 		console.error(data.error.message);
-			// 	};
-
-			// 	defer.resolve({results:{message: 'Successfully initialized', code: 202}});
-			// })
-			// return defer.promise;
-		}
-
-		Database.prototype.setPointerMapping = function(tables) {
-			for (var table in tables) {
-				for (var column in tables[table]) {
-					if (dataType.indexOf(tables[table][column]) === -1 && dataType.indexOf(tables[table][column]['_type']) ===-1)
-					{
-						return {error:{message: 'Invalid data type'}};
-					} else if (tables[table][column]['_type'] == 'pointer')
-					{
-						pointerMapping[column] = tables[table][column]['to'];
-					}
-				};
-			};
-		}
-
-		// Modeling database and validate field
-		Database.prototype.modelDatabase = function() {
-			var defer = $q.defer();
-			Database.prototype.readDatabaseStruct().then(function(data){
-				Database.prototype.setPointerMapping(data[1])
-				Parse.initialize(data.applicationId, data.javascriptKey);
-				defer.resolve({results:{message: 'Database contructed successfully', code: 202}});
-			});
-			return defer.promise;
-		}
-
-		// Read in database structure from dataStruct.json
-		Database.prototype.readDatabaseStruct = function() {
-	        var defer = $q.defer();
-	        $http.get('dataStruct.json')
-	            .success(function(data) {
-	                defer.resolve(data);
-	            })
-	            .error(function() {
-	                defer.reject('Could not find dataStruct.json');
-	            });
-
-	        return defer.promise;
-	    }
-
-	    // Read in keys from keys.json
-		Database.prototype.readParseKeys = function() {
-	        var defer = $q.defer();
-	        $http.get('keys.json')
-	            .success(function(data) {
-	                defer.resolve(data);
-	            })
-	            .error(function() {
-	                defer.reject('Could not find keys.json');
-	            });
-
-	        return defer.promise;
-	    }
-
-		// set Parse keys
-		Database.prototype.setKeys = function(applicationId, javascriptKey){
-			var defer = $q.defer();
-			Database.prototype.readParseKeys().then(function(data){
-				if (data['applicationId'] === undefined || data['javascriptKey'] === undefined) {
-					defer.resolve({error:{message: 'One or both keys for Parse are missing', code: 422}});
-				} else {
-					Parse.initialize(data.applicationId, data.javascriptKey);
-					defer.resolve({results:{message: 'Successfully initialized', code: 202}});
-				}
-			})
-			return defer.promise;
-		};
 
 		// set Parse keys simple
 		Database.prototype.setKeysSimple = function(applicationId, javascriptKey){
-			Parse.initialize(data.applicationId, data.javascriptKey);
+			Parse.initialize(applicationId, javascriptKey);
 		}
 
 		// Mapping Pointer
@@ -143,7 +27,7 @@ angular
 			{
 				if (pointerMapping[keys[i]]) {
 					query[keys[i]] = {
-						  __type: "Pointer",
+						__type: "Pointer",
 				        className: pointerMapping[keys[i]],
 				        objectId: query[keys[i]]
 				    }
@@ -165,7 +49,7 @@ angular
 			}
 			for (var i = 0; i < keys.length; i++) 
 			{
-				if (pointerMapping[keys[i]]) {
+				if (pointerMapping[keys[i]] && Object.keys(query[keys[i]]).length == 1) {
 					query[keys[i]] = query[keys[i]].objectId;
 				} else if (typeof(query[keys[i]]) === 'object') {
 					if ( query[keys[i]]._url)
@@ -227,8 +111,8 @@ angular
 			user.set("email", data.email);
 			user.signUp(null, {
 				success: function(data) {
-				var results = new Database();
-					results.setPointerMapping(pointerMapping);
+					var results = new Database();
+					results.setPointerMappingSimple(pointerMapping);
 					defer.resolve({results: results.decodeData(results.stripObject(data)), code: 200});
 					$rootScope.$apply();
 				},
@@ -249,7 +133,7 @@ angular
 			Parse.User.logIn(data.username, data.password, {
 				success: function(data) {
 					var results = new Database();
-					results.setPointerMapping(pointerMapping);
+					results.setPointerMappingSimple(pointerMapping);
 					defer.resolve({results: results.decodeData(results.stripObject(data)), code: 200});
 					$rootScope.$apply();
 				},
@@ -314,7 +198,7 @@ angular
 			table.save(data, {
 				success: function(data) {
 					var results = new Database();
-					results.setPointerMapping(pointerMapping);
+					results.setPointerMappingSimple(pointerMapping);
 					defer.resolve({results: results.decodeData(results.stripObject(data)), code: 200});
 					$rootScope.$apply();
 				},
@@ -341,7 +225,7 @@ angular
 			query.find({
 				success: function(data) {
 					var results = new Database();
-					results.setPointerMapping(pointerMapping);
+					results.setPointerMappingSimple(pointerMapping);
 					defer.resolve({results: results.decodeData(results.stripArray(data)), code: 200});
 					$rootScope.$apply();
 				},
@@ -370,7 +254,7 @@ angular
 				    var result = object.save();
 				    result.then(function(){
 				    	var results = new Database();
-						results.setPointerMapping(pointerMapping);
+				    	results.setPointerMappingSimple(pointerMapping);
 				    	if (result._resolved) {
 					    	defer.resolve({results: results.decodeData(results.stripArray(result._result)), code: 200});
 					    	$rootScope.$apply();
@@ -446,22 +330,6 @@ angular
 					break;
 			}
 		}
-
-		// function checkFlag(param) {
-		//     if($rootScope.is_initialized == false) {
-		//         window.setTimeout(checkFlag, 1); /* Database.prototype checks the flag every 100 milliseconds*/
-		//     } else {
-		//     	console.log("hello")
-		//     }
-		// }
-
-
-		// Database.prototype.request = function(method, table_name, data, objectId)
-		// {
-		// 	if ($rootScope.is_initialized == false) {
-		// 		Database.prototype.init
-		// 	};
-		// }
 	});
 
 	
