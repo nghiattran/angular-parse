@@ -18,7 +18,6 @@ You can find your keys in Parse -> Settings -> Keys
 ### Set pointer type
 	parseServices.setPointerMappingSimple(dataStructure);
 
-<<<<<<< HEAD
 dataStructure has to be an object containing column names and where the pointers pointing to
 
 Example:
