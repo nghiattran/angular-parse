@@ -11,5 +11,6 @@
 angular
   .module('angularParseApp', [
     'parseServices',
-    'ui.ace'
+    'ui.ace',
+    'jsonFormatter'
     ]);

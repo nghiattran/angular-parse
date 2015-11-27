@@ -8,7 +8,15 @@
  * Controller of the angularParseApp
  */
 angular.module('angularParseApp')
-  .controller('MainCtrl', function (parseServices, $scope, $q, $rootScope, $timeout) {
+  .controller('MainCtrl', function (parseServices, $scope, $q, $rootScope, $timeout, JSONFormatterConfig) {
+
+    $scope.$watch('request.json', function (str){
+      var result = {};
+      try {
+          $scope.textareaJson = JSON.parse(str);
+      } catch (e) {}
+    });
+
     $scope.request = {
       json : '',
     }
@@ -19,7 +27,6 @@ angular.module('angularParseApp')
     
     var is_json_string = function(str) {
       str = str.replace(/'/g,"\"");
-      console.log(str);
       try {
         JSON.parse(str);
       } catch (e) {
@@ -31,28 +38,29 @@ angular.module('angularParseApp')
     var post_request = function(request)
     {
       parseServices.post(request.table,request.json).then(function(data){
-        $scope.response = JSON.stringify(data,null,"    ")
+        $scope.response = data;
       })
     }
 
     var get_request = function(request)
     {
       parseServices.get(request.table,request.json).then(function(data){
-        $scope.response = JSON.stringify(data,null,"    ")
+        $scope.response = data;
       })
     }
 
     var put_request = function(request)
     {
       parseServices.put(request.table, request.objectId,request.json).then(function(data){
-        $scope.response = JSON.stringify(data,null,"    ")
+        $scope.response = data;
       })
     }
 
     var delete_request = function(request)
     {
       parseServices.delete(request.table, request.objectId,request.json).then(function(data){
-        $scope.response = JSON.stringify(data,null,"    ")
+        $scope.response = data;
+        // $scope.response = JSON.stringify(data,null,"    ")
       })
     }
 

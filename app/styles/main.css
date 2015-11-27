@@ -89,3 +89,10 @@ body {
 .response {
   height: 400px !important;
 }
+
+.result {
+  padding: 1em;
+  border: 1px solid #eee;
+  margin-bottom: 2em;
+  overflow: auto;
+}

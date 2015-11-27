@@ -18,20 +18,27 @@
         </select>
         <br>
 
-        <label>JSON</label>
+        <label>JSON (check Preview JSON below to see if it is correct)</label>
         <section>
           <div ui-ace ng-model="request.json" required></div>
         </section>
+        <br>
+
+        <div class="col-xs-12">
+        <label>Preview JSON</label>
+          <div class="result">
+              <json-formatter json="textareaJson" open="1"></json-formatter>
+          </div>
+        </div>
 
         <input class="btn btn-primary pull-right" type="submit" value="Send">
       </form>
     </div>
     <div class="col-xs-6">
       <label>Response</label>
-      <!-- <textarea class="form-control" rows="20" ng-model="response" readonly></textarea> -->
       <section>
-        <div ui-ace ng-model="response" readonly class="response"></div>
-      </section>
+        <json-formatter json="response" open="1"></json-formatter>
+      <section>
     </div>
   </div>
   <br>
