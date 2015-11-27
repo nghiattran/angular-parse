@@ -2,7 +2,7 @@
 'use strict';
 /** @ngInject */
 angular
-    .module('parseServies', [
+    .module('parseServices', [
   	])
 	.service('parseServices', function Database($rootScope, $q, $http) 
 	{	
