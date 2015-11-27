@@ -10,5 +10,6 @@
  */
 angular
   .module('angularParseApp', [
-    'parseService'
+    'parseServices',
+    'ui.ace'
     ]);
