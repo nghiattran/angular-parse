@@ -16,6 +16,7 @@ angular.module('angularParseApp')
 
     parseServices.setKeys("aNcLKlFlOSSlgFHdyelHlMLzgVxUB5MutK2Dsn4K", "zwCxqHYtqjjoubvqpoVhqkN5kczWcPUKwVI3vmMk");
     parseServices.setPointerMappingSimple({createdBy: '_User', onShelf: 'Shelves'});
+    
     var is_json_string = function(str) {
       str = str.replace(/'/g,"\"");
       console.log(str);

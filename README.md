@@ -70,33 +70,27 @@ createdBy and onShelf are column name which are pointing to _User and Shelves cl
 * `params` structure 
 
 		params
-
 			\-where							(Arguments for query)
-
 			\-order 						(Specify a field to sort by)
-
 			\-limit							(Limit the number of objects returned by the query)
-
 			\-skip 							(Use with limit to paginate through results)
-
 			\-keys 							(Restrict the fields returned by the query)
-
 			\-include						(Use on Pointer columns to return the full object)
 
 * Query Constraints
 
-	$lt				Less Than
-	$lte			Less Than Or Equal To
-	$gt				Greater Than
-	$gte			Greater Than Or Equal To
-	$ne				Not Equal To
-	$in				Contained In
-	$nin			Not Contained in
-	$exists			A value is set for the key
-	$select			This matches a value for a key in the result of a different query
-	$dontSelect		Requires that a key's value not match a value for a key in the result of a different query
-	$all			Contains all of the given values
-	$regex			Requires that a key's value match a regular expression
+		$lt				Less Than
+		$lte			Less Than Or Equal To
+		$gt				Greater Than
+		$gte			Greater Than Or Equal To
+		$ne				Not Equal To
+		$in				Contained In
+		$nin			Not Contained in
+		$exists			A value is set for the key
+		$select			This matches a value for a key in the result of a different query
+		$dontSelect		Requires that a key's value not match a value for a key in the result of a different query
+		$all			Contains all of the given values
+		$regex			Requires that a key's value match a regular expression
 
 Angular-parse will converse object_id in 'where' to pointer type. So use
 
@@ -107,9 +101,11 @@ Angular-parse will converse object_id in 'where' to pointer type. So use
 instead of
 
 	where: {
-		__type: "Pointer",
-		className: "_User",
-    	createdBy: "object_id of an entry"
+		createdBy: {
+			__type: "Pointer",
+			className: "_User",
+	    	objectId: "object_id of an entry"
+		}
     },
 
 ### Post
