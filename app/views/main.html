@@ -1,42 +1,38 @@
 <div class="container">
-<div class="row">
-<div class="col-lg-6 col-md-7 col-sm-9">
+  <div class="row">
+    <div class="col-xs-6">
+      <form ng-submit="submit(request)" enctype='application/json'>
+        <label>Method</label>
+        <select class="form-control" required ng-init="request.method='GET'" ng-model="request.method">
+          <option value="GET" selected>GET</option>
+          <option value="POST">POST</option>
+          <option value="PUT">PUT</option>
+          <option value="DELETE">DELETE</option>
+        </select>
+        <br>
 
-  <h4 style="border-bottom: 1px solid #c5c5c5;">
-    <i class="glyphicon glyphicon-user">
-    </i>
-    Account Access
-  </h4>
-  <div style="padding: 20px;" id="form-olvidado">
-  <form accept-charset="UTF-8" role="form" id="login-form" method="post">
-    <input type="file" id="profilePhotoFileUpload" fileread="redentials.files" multiple>
-    <h4 class="">
-      Signin!
-    </h4>
-      <fieldset>
-        <div class="form-group input-group">
-          <span class="input-group-addon">
-            @
-          </span>
-          <input class="form-control" placeholder="Email" name="email" type="email" required="" autofocus="" ng-model="redentials.username">
-        </div>
-        <div class="form-group input-group">
-          <span class="input-group-addon">
-            <i class="glyphicon glyphicon-lock">
-            </i>
-          </span>
-          <input class="form-control" placeholder="Password" name="password" type="password" value="" required="" ng-model="redentials.password">
-        </div>
-        <div class="form-group">
-          <button type="submit" class="btn btn-primary btn-block" ng-click="test(redentials)">
-            Access
-          </button>
-          <!-- <p class="help-block">
-            <a class="pull-right text-muted" href="#" id="olvidado"><small>Forgot your password?</small></a>
-            <a class="pull-left text-muted" ng-click="test()"><small>Signup!</small></a>
+        <label>Table</label>
+        <select class="form-control" required ng-init="request.table='Shelves'" ng-model="request.table">
+          <option value="Shelves" selected>Shelves</option>
+          <option value="Books">Books</option>
+        </select>
+        <br>
 
-          </p> -->
-        </div>
-      </fieldset>
-    </form>
+        <label>JSON</label>
+        <section>
+          <div ui-ace ng-model="request.json" required></div>
+        </section>
+
+        <input class="btn btn-primary pull-right" type="submit" value="Send">
+      </form>
+    </div>
+    <div class="col-xs-6">
+      <label>Response</label>
+      <!-- <textarea class="form-control" rows="20" ng-model="response" readonly></textarea> -->
+      <section>
+        <div ui-ace ng-model="response" readonly class="response"></div>
+      </section>
+    </div>
   </div>
+  <br>
+</div>

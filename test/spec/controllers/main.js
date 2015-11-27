@@ -1,16 +1,16 @@
 'use strict';
 
-describe('Controller: MainCtrl', function () {
+describe('Controller: TestCtrl', function () {
 
   // load the controller's module
   beforeEach(module('angularParseApp'));
 
-  var MainCtrl, scope;
+  var TestCtrl, scope;
 
   // Initialize the controller and a mock scope
   beforeEach(inject(function ($controller, $rootScope) {
     scope = $rootScope.$new();
-    MainCtrl = $controller('MainCtrl', {
+    TestCtrl = $controller('TestCtrl', {
       $scope: scope
       // place here mocked dependencies
     });

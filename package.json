@@ -39,7 +39,7 @@
     "node": ">=0.10.0"
   },
   "scripts": {
-    "preInstall": "./bin/installIC",
-    "test": "./bin/installIC && grunt test"
+    "preInstall": "bin/installIC",
+    "test": "bin/installIC && grunt test"
   }
 }
