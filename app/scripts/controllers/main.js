@@ -14,7 +14,7 @@ angular.module('angularParseApp')
     }
     $scope.request.json = JSON.stringify({"where":{"objectId":"XuHh1HlZNq"}},null,"    ");
 
-    parseServices.setKeys("aNcLKlFlOSSlgFHdyelHlMLzgVxUB5MutK2Dsn4K", "zwCxqHYtqjjoubvqpoVhqkN5kczWcPUKwVI3vmMk");
+    parseServices.setKeysSimple("aNcLKlFlOSSlgFHdyelHlMLzgVxUB5MutK2Dsn4K", "zwCxqHYtqjjoubvqpoVhqkN5kczWcPUKwVI3vmMk");
     parseServices.setPointerMappingSimple({createdBy: '_User', onShelf: 'Shelves'});
     
     var is_json_string = function(str) {
