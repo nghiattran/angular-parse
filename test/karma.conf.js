@@ -1,7 +1,7 @@
 // Karma configuration
 // http://karma-runner.github.io/0.12/config/configuration-file.html
-// Generated on 2015-09-23 using
-// generator-karma 1.0.0
+// Generated on 2015-12-18 using
+// generator-karma 1.0.1
 
 module.exports = function(config) {
   'use strict';
@@ -25,8 +25,16 @@ module.exports = function(config) {
       'bower_components/jquery/dist/jquery.js',
       'bower_components/angular/angular.js',
       'bower_components/bootstrap/dist/js/bootstrap.js',
-      'bower_components/angular-ui-ace/ui-ace.js',
+      'bower_components/angular-animate/angular-animate.js',
+      'bower_components/angular-aria/angular-aria.js',
+      'bower_components/angular-cookies/angular-cookies.js',
+      'bower_components/angular-messages/angular-messages.js',
+      'bower_components/angular-resource/angular-resource.js',
+      'bower_components/angular-route/angular-route.js',
+      'bower_components/angular-sanitize/angular-sanitize.js',
+      'bower_components/angular-touch/angular-touch.js',
       'bower_components/json-formatter/dist/json-formatter.js',
+      'bower_components/angular-local-storage/dist/angular-local-storage.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
       "app/scripts/**/*.js",
@@ -55,7 +63,6 @@ module.exports = function(config) {
 
     // Which plugins to enable
     plugins: [
-      'karma-coverage',
       "karma-phantomjs-launcher",
       "karma-jasmine"
     ],
@@ -76,34 +83,5 @@ module.exports = function(config) {
     // },
     // URL root prevent conflicts with the site root
     // urlRoot: '_karma_'
-
-    // coverage reporter generates the coverage
-    reporters: ['progress', 'coverage'],
-
-    preprocessors: {
-      // source files, that you wanna generate coverage for
-      // do not include tests or libraries
-      // (these files will be instrumented by Istanbul)
-      // 'src/**/*.js': ['coverage']
-      "app/scripts/services/parse.service.js": ['coverage']
-    },
-
-    // optionally, configure the reporter
-    coverageReporter: {
-      // check: {
-      //   global: {
-      //     // statements: 50,
-      //     // branches: 50,
-      //     // functions: 50,
-      //     // lines: 50,
-      //     excludes: [
-      //       "app/scripts/services/parse.js",
-      //       "app/scripts/controllers/*.js"
-      //     ]
-      //   },
-      // }
-      type : 'html',
-      dir : 'coverage/'
-    }
   });
 };
